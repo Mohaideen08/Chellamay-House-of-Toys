@@ -3,6 +3,7 @@ import {
   Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
   Box, Typography, Divider,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
@@ -13,6 +14,8 @@ import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded';
 import AssignmentReturnRoundedIcon from '@mui/icons-material/AssignmentReturnRounded';
 import SystemUpdateAltRoundedIcon from '@mui/icons-material/SystemUpdateAltRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 
 export const DRAWER_WIDTH = 190;
 
@@ -20,6 +23,8 @@ const BRANCH_MENU = [
   { label: 'Dashboard', path: '/dashboard', icon: DashboardRoundedIcon },
   { divider: true, label: 'Operations' },
   { label: 'Products', path: '/products', icon: Inventory2RoundedIcon },
+  { label: 'Categories', path: '/categories', icon: CategoryRoundedIcon },
+  { label: 'Dealers', path: '/dealers', icon: PeopleAltRoundedIcon },
   { label: 'Sticker Printer', path: '/qr-stickers', icon: QrCodeScannerRoundedIcon },
   { label: 'Billing', path: '/billing', icon: ReceiptRoundedIcon },
   { divider: true, label: 'Reports' },
@@ -33,6 +38,8 @@ const BRANCH_MENU = [
 const SidebarContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const p = theme.palette.primary.main;
   const menuItems = BRANCH_MENU;
 
   return (
@@ -71,13 +78,13 @@ const SidebarContent = () => {
                     py: 1,
                     px: 2.5,
                     position: 'relative',
-                    color: isActive ? 'primary.main' : 'text.secondary',
+                    color: isActive ? p : 'text.secondary',
                     fontWeight: isActive ? 600 : 400,
-                    backgroundColor: isActive ? 'rgba(233,30,140,0.06)' : 'transparent',
-                    borderLeft: isActive ? '3px solid #E91E8C' : '3px solid transparent',
+                    backgroundColor: isActive ? alpha(p, 0.06) : 'transparent',
+                    borderLeft: isActive ? `3px solid ${p}` : '3px solid transparent',
                     '&:hover': {
-                      backgroundColor: 'rgba(233,30,140,0.05)',
-                      color: 'primary.main',
+                      backgroundColor: alpha(p, 0.05),
+                      color: p,
                     },
                     transition: 'all 0.15s ease',
                   }}

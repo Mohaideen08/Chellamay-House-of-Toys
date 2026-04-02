@@ -5,7 +5,7 @@ import {
   Dialog, DialogContent, DialogActions,
   IconButton, Tooltip,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -40,6 +40,7 @@ const QUICK_RANGES = [
 
 const RestockReportPage = () => {
   const { showSnackbar } = useSnackbar();
+  const theme = useTheme();
   const { profile } = useAuth();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -138,7 +139,7 @@ const RestockReportPage = () => {
   const uniqueProducts = new Set(filteredRows.map((r) => r.product_id).filter(Boolean)).size;
 
   const SUMMARY = [
-    { label: 'Restock Events',  value: filteredRows.length, color: '#9C27B0', icon: SystemUpdateAltRoundedIcon },
+    { label: 'Restock Events',  value: filteredRows.length, color: theme.palette.secondary.main, icon: SystemUpdateAltRoundedIcon },
     { label: 'Total Qty Added', value: totalQtyRestocked,   color: '#22C55E', icon: AddBoxRoundedIcon },
     { label: 'Unique Products', value: uniqueProducts,      color: '#3B82F6', icon: Inventory2RoundedIcon },
   ];
@@ -154,7 +155,7 @@ const RestockReportPage = () => {
       field: 'item_code', headerName: 'Item Code', flex: 0.7, minWidth: 120, headerAlign: 'center', align: 'center',
       valueGetter: (_, row) => row.products?.item_code || '—',
       renderCell: (p) => (
-        <Typography variant="body2" sx={{ fontFamily: 'monospace', color: '#6A1B9A', fontWeight: 600 }}>
+        <Typography variant="body2" sx={{ fontFamily: 'monospace', color: 'secondary.dark', fontWeight: 600 }}>
           {p.row.products?.item_code || '—'}
         </Typography>
       ),
@@ -165,7 +166,7 @@ const RestockReportPage = () => {
         <Chip
           label={`+${p.value}`}
           size="small"
-          sx={{ fontWeight: 700, bgcolor: alpha('#E91E8C', 0.1), color: '#AD1457', border: '1px solid rgba(233,30,140,0.25)' }}
+          sx={{ fontWeight: 700, bgcolor: alpha(theme.palette.primary.main, 0.1), color: 'primary.dark', border: '1px solid rgba(var(--color-primary-rgb),0.25)' }}
         />
       ),
     },
@@ -189,7 +190,7 @@ const RestockReportPage = () => {
         <Chip
           label={p.row.branches?.name || '—'}
           size="small"
-          sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: alpha('#9C27B0', 0.1), color: '#6A1B9A', border: '1px solid rgba(156,39,176,0.2)' }}
+          sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: alpha(theme.palette.secondary.main, 0.1), color: 'secondary.dark', border: '1px solid rgba(var(--color-secondary-rgb),0.2)' }}
         />
       ),
     },
@@ -207,7 +208,7 @@ const RestockReportPage = () => {
             <IconButton
               size="small"
               onClick={() => openEdit(p.row)}
-              sx={{ bgcolor: alpha('#E91E8C', 0.08), color: '#E91E8C', '&:hover': { bgcolor: alpha('#E91E8C', 0.18), transform: 'scale(1.12)' }, transition: 'all 0.2s' }}
+              sx={{ bgcolor: alpha(theme.palette.primary.main, 0.08), color: 'primary.main', '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.18), transform: 'scale(1.12)' }, transition: 'all 0.2s' }}
             >
               <EditRoundedIcon sx={{ fontSize: 15 }} />
             </IconButton>
@@ -235,7 +236,7 @@ const RestockReportPage = () => {
           sx={{
             mb: 2,
             borderRadius: '8px',
-            background: 'linear-gradient(135deg, #E91E8C 0%, #9C27B0 60%, #6A1B9A 100%)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 60%, ${theme.palette.secondary.dark} 100%)`,
             px: { xs: 2, sm: 2.5 },
             py: 1.4,
             display: 'flex',
@@ -291,14 +292,14 @@ const RestockReportPage = () => {
             p: { xs: 1.8, sm: 2.5 },
             mb: 2,
             borderRadius: '8px',
-            border: '1.5px solid rgba(233,30,140,0.12)',
-            bgcolor: alpha('#E91E8C', 0.02),
+            border: '1.5px solid rgba(var(--color-primary-rgb),0.12)',
+            bgcolor: alpha(theme.palette.primary.main, 0.02),
             ...fadeInUp(0.08),
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <FilterListRoundedIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
-            <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#AD1457' }}>Filters</Typography>
+            <FilterListRoundedIcon sx={{ color: 'primary.main', fontSize: 18 }} />
+            <Typography variant="subtitle2" fontWeight={700} sx={{ color: 'primary.dark' }}>Filters</Typography>
           </Box>
 
           {/* Quick range buttons */}
@@ -310,20 +311,20 @@ const RestockReportPage = () => {
                 onClick={() => applyRange(i)}
                 variant={activeRange === i ? 'contained' : 'outlined'}
                 sx={activeRange === i ? {
-                  background: 'linear-gradient(135deg,#E91E8C,#9C27B0)',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                   color: '#fff',
                   borderRadius: '10px',
                   fontSize: '0.77rem',
                   px: 1.8,
                   border: 'none',
-                  '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' },
+                  '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` },
                 } : {
-                  borderColor: alpha('#E91E8C', 0.45),
-                  color: '#AD1457',
+                  borderColor: alpha(theme.palette.primary.main, 0.45),
+                  color: 'primary.dark',
                   borderRadius: '10px',
                   fontSize: '0.77rem',
                   px: 1.8,
-                  '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.05) },
+                  '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) },
                 }}
               >
                 {r.label}
@@ -352,16 +353,16 @@ const RestockReportPage = () => {
                     '& .MuiInputBase-input': { fontSize: '0.85rem' },
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '10px',
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
                     },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                   },
                 },
               }}
             />
             <Typography
-              color={alpha('#6A1B9A', 0.6)}
+              color={alpha(theme.palette.secondary.dark, 0.6)}
               fontWeight={700}
               sx={{ display: { xs: 'none', sm: 'block' }, flexShrink: 0 }}
             >–</Typography>
@@ -378,10 +379,10 @@ const RestockReportPage = () => {
                     '& .MuiInputBase-input': { fontSize: '0.85rem' },
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '10px',
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
                     },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                   },
                 },
               }}
@@ -391,13 +392,13 @@ const RestockReportPage = () => {
               size="small"
               onClick={fetchData}
               sx={{
-                background: 'linear-gradient(135deg,#E91E8C,#9C27B0)',
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                 borderRadius: '10px',
                 px: 3,
                 py: 1,
                 fontWeight: 700,
                 width: { xs: '100%', sm: 'auto' },
-                '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' },
+                '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` },
               }}
             >
               Apply
@@ -410,7 +411,7 @@ const RestockReportPage = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
+                    <SearchRoundedIcon sx={{ color: 'primary.main', fontSize: 18 }} />
                   </InputAdornment>
                 ),
               }}
@@ -422,8 +423,8 @@ const RestockReportPage = () => {
                 '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '10px',
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
                 },
               }}
             />
@@ -470,7 +471,7 @@ const RestockReportPage = () => {
           elevation={0}
           sx={{
             borderRadius: '8px',
-            border: '1.5px solid rgba(233,30,140,0.1)',
+            border: '1.5px solid rgba(var(--color-primary-rgb),0.1)',
             overflow: 'hidden',
             ...fadeInUp(0.22),
           }}
@@ -487,9 +488,9 @@ const RestockReportPage = () => {
               border: 'none',
               '& .MuiDataGrid-main': { overflow: 'auto' },
               '& .MuiDataGrid-columnHeaders': {
-                background: 'linear-gradient(90deg, rgba(233,30,140,0.08) 0%, rgba(156,39,176,0.08) 100%)',
+                background: 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.08) 0%, rgba(var(--color-secondary-rgb),0.08) 100%)',
                 borderRadius: '8px 8px 0 0',
-                borderBottom: '2px solid rgba(233,30,140,0.2)',
+                borderBottom: '2px solid rgba(var(--color-primary-rgb),0.2)',
               },
               '& .MuiDataGrid-columnHeaderTitle': {
                 color: '#AD1457 !important',
@@ -501,9 +502,9 @@ const RestockReportPage = () => {
               '& .MuiDataGrid-columnSeparator': { color: 'rgba(173,20,87,0.25)' },
               '& .MuiDataGrid-sortIcon': { color: '#AD1457 !important' },
               '& .MuiDataGrid-menuIconButton': { color: '#AD1457 !important' },
-              '& .MuiDataGrid-row:hover': { bgcolor: alpha('#E91E8C', 0.04) },
-              '& .MuiDataGrid-cell': { borderColor: 'rgba(233,30,140,0.08)' },
-              '& .MuiDataGrid-footerContainer': { borderTop: '1.5px solid rgba(233,30,140,0.12)' },
+              '& .MuiDataGrid-row:hover': { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+              '& .MuiDataGrid-cell': { borderColor: 'rgba(var(--color-primary-rgb),0.08)' },
+              '& .MuiDataGrid-footerContainer': { borderTop: '1.5px solid rgba(var(--color-primary-rgb),0.12)' },
             }}
           />
         </Paper>
@@ -517,7 +518,7 @@ const RestockReportPage = () => {
           PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden' } }}
         >
           <Box sx={{
-            background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
             px: 2.5, py: 1.8,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
@@ -534,7 +535,7 @@ const RestockReportPage = () => {
             </IconButton>
           </Box>
           <DialogContent sx={{ p: 2.5, bgcolor: '#FAFBFF' }}>
-            <Typography variant="body2" fontWeight={700} sx={{ mb: 0.4, color: '#AD1457' }}>
+            <Typography variant="body2" fontWeight={700} sx={{ mb: 0.4, color: 'primary.dark' }}>
               {editTarget?.products?.name}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
@@ -552,8 +553,8 @@ const RestockReportPage = () => {
                 helperText={editError || `New stock after: ${(editTarget?.qty_before ?? 0) + (parseInt(editQty) || 0)}`}
                 inputProps={{ min: 1 }}
                 sx={{
-                  '& .MuiOutlinedInput-root': { borderRadius: '10px', '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' } },
-                  '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+                  '& .MuiOutlinedInput-root': { borderRadius: '10px', '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' } },
+                  '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                 }}
               />
               <TextField
@@ -566,8 +567,8 @@ const RestockReportPage = () => {
                 onChange={(e) => setEditNotes(e.target.value)}
                 placeholder="e.g. Restocked from dealer…"
                 sx={{
-                  '& .MuiOutlinedInput-root': { borderRadius: '10px', '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' } },
-                  '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+                  '& .MuiOutlinedInput-root': { borderRadius: '10px', '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' } },
+                  '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                   '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
                 }}
               />
@@ -577,7 +578,7 @@ const RestockReportPage = () => {
             <Button
               variant="outlined"
               onClick={() => setEditTarget(null)}
-              sx={{ flex: 1, borderRadius: '10px', borderColor: alpha('#E91E8C', 0.5), color: '#E91E8C', '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.05) } }}
+              sx={{ flex: 1, borderRadius: '10px', borderColor: alpha(theme.palette.primary.main, 0.5), color: 'primary.main', '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) } }}
             >
               Cancel
             </Button>
@@ -586,7 +587,7 @@ const RestockReportPage = () => {
               onClick={handleEditSave}
               disabled={saving}
               startIcon={<EditRoundedIcon />}
-              sx={{ flex: 1, borderRadius: '10px', background: 'linear-gradient(135deg,#E91E8C,#9C27B0)', fontWeight: 700, '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' } }}
+              sx={{ flex: 1, borderRadius: '10px', background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, fontWeight: 700, '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` } }}
             >
               {saving ? 'Saving…' : 'Save Changes'}
             </Button>

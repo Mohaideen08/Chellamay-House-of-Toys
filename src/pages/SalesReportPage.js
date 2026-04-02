@@ -5,7 +5,7 @@ import {
   IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions,
   CircularProgress, TextField, InputAdornment,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -123,6 +123,7 @@ const QUICK_RANGES = [
 
 const SalesReportPage = () => {
   const { profile } = useAuth();
+  const theme = useTheme();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dateFrom, setDateFrom] = useState(dayjs().startOf('day'));
@@ -302,7 +303,7 @@ const SalesReportPage = () => {
     },
     {
       field: 'sale_items', headerName: 'Items', flex: 0.5, minWidth: 80, align: 'center', headerAlign: 'center',
-      renderCell: (p) => <Chip label={p.value?.length ?? 0} size="small" sx={{ bgcolor: alpha('#E91E8C', 0.1), color: '#AD1457', fontWeight: 700, border: '1px solid rgba(233,30,140,0.25)' }} />,
+      renderCell: (p) => <Chip label={p.value?.length ?? 0} size="small" sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: 'primary.dark', fontWeight: 700, border: '1px solid rgba(var(--color-primary-rgb),0.25)' }} />,
     },
     {
       field: 'mrp', headerName: 'MRP', flex: 0.8, minWidth: 120, headerAlign: 'center', align: 'center',
@@ -320,7 +321,7 @@ const SalesReportPage = () => {
     },
     {
       field: 'actions', headerName: '', flex: 0.5, minWidth: 90, sortable: false, align: 'center', headerAlign: 'center',
-      renderHeader: () => <PrintRoundedIcon sx={{ fontSize: 18, color: '#AD1457' }} />,
+      renderHeader: () => <PrintRoundedIcon sx={{ fontSize: 18, color: 'primary.dark' }} />,
       renderCell: (p) => (
         <Tooltip title="Reprint Bill">
           <IconButton
@@ -344,7 +345,7 @@ const SalesReportPage = () => {
           sx={{
             mb: 2,
             borderRadius: '8px',
-            background: 'linear-gradient(135deg, #E91E8C 0%, #9C27B0 60%, #6A1B9A 100%)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 60%, ${theme.palette.secondary.dark} 100%)`,
             px: { xs: 2, sm: 2.5 },
             py: 1.4,
             display: 'flex',
@@ -400,14 +401,14 @@ const SalesReportPage = () => {
             p: { xs: 1.8, sm: 2.5 },
             mb: 2,
             borderRadius: '8px',
-            border: '1.5px solid rgba(233,30,140,0.12)',
-            bgcolor: alpha('#E91E8C', 0.02),
+            border: '1.5px solid rgba(var(--color-primary-rgb),0.12)',
+            bgcolor: alpha(theme.palette.primary.main, 0.02),
             ...fadeInUp(0.08),
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <FilterListRoundedIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
-            <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#AD1457' }}>Filters</Typography>
+            <FilterListRoundedIcon sx={{ color: 'primary.main', fontSize: 18 }} />
+            <Typography variant="subtitle2" fontWeight={700} sx={{ color: 'primary.dark' }}>Filters</Typography>
           </Box>
 
           {/* Search */}
@@ -422,15 +423,15 @@ const SalesReportPage = () => {
               '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
               '& .MuiOutlinedInput-root': {
                 borderRadius: '10px',
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
               },
-              '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+              '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
             }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ fontSize: 18, color: '#E91E8C' }} />
+                  <SearchRoundedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                 </InputAdornment>
               ),
             }}
@@ -445,20 +446,20 @@ const SalesReportPage = () => {
                 onClick={() => applyRange(i)}
                 variant={activeRange === i ? 'contained' : 'outlined'}
                 sx={activeRange === i ? {
-                  background: 'linear-gradient(135deg,#E91E8C,#9C27B0)',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                   color: '#fff',
                   borderRadius: 2.5,
                   fontSize: '0.77rem',
                   px: 1.8,
                   border: 'none',
-                  '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' },
+                  '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` },
                 } : {
-                  borderColor: alpha('#E91E8C', 0.45),
-                  color: '#AD1457',
+                  borderColor: alpha(theme.palette.primary.main, 0.45),
+                  color: 'primary.dark',
                   borderRadius: 2.5,
                   fontSize: '0.77rem',
                   px: 1.8,
-                  '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.05) },
+                  '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) },
                 }}
               >
                 {r.label}
@@ -487,16 +488,16 @@ const SalesReportPage = () => {
                     '& .MuiInputBase-input': { fontSize: '0.85rem' },
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2.5,
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
                     },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                   },
                 },
               }}
             />
             <Typography
-              color={alpha('#6A1B9A', 0.6)}
+              color={alpha(theme.palette.secondary.dark, 0.6)}
               fontWeight={700}
               sx={{ display: { xs: 'none', sm: 'block' }, flexShrink: 0 }}
             >–</Typography>
@@ -513,10 +514,10 @@ const SalesReportPage = () => {
                     '& .MuiInputBase-input': { fontSize: '0.85rem' },
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2.5,
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
                     },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                   },
                 },
               }}
@@ -527,13 +528,13 @@ const SalesReportPage = () => {
               onClick={fetchSales}
               fullWidth={false}
               sx={{
-                background: 'linear-gradient(135deg,#E91E8C,#9C27B0)',
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                 borderRadius: 2.5,
                 px: 3,
                 py: 1,
                 fontWeight: 700,
                 width: { xs: '100%', sm: 'auto' },
-                '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' },
+                '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` },
               }}
             >
               Apply
@@ -578,7 +579,7 @@ const SalesReportPage = () => {
           elevation={0}
           sx={{
             borderRadius: '8px',
-            border: '1.5px solid rgba(233,30,140,0.1)',
+            border: '1.5px solid rgba(var(--color-primary-rgb),0.1)',
             overflow: 'hidden',
             ...fadeInUp(0.22),
           }}
@@ -595,9 +596,9 @@ const SalesReportPage = () => {
               border: 'none',
               '& .MuiDataGrid-main': { overflow: 'auto' },
               '& .MuiDataGrid-columnHeaders': {
-                background: 'linear-gradient(90deg, rgba(233,30,140,0.08) 0%, rgba(156,39,176,0.08) 100%)',
+                background: 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.08) 0%, rgba(var(--color-secondary-rgb),0.08) 100%)',
                 borderRadius: '8px 8px 0 0',
-                borderBottom: '2px solid rgba(233,30,140,0.2)',
+                borderBottom: '2px solid rgba(var(--color-primary-rgb),0.2)',
               },
               '& .MuiDataGrid-columnHeaderTitle': {
                 color: '#AD1457 !important',
@@ -609,9 +610,9 @@ const SalesReportPage = () => {
               '& .MuiDataGrid-columnSeparator': { color: 'rgba(173,20,87,0.25)' },
               '& .MuiDataGrid-sortIcon': { color: '#AD1457 !important' },
               '& .MuiDataGrid-menuIconButton': { color: '#AD1457 !important' },
-              '& .MuiDataGrid-row:hover': { bgcolor: alpha('#E91E8C', 0.04) },
-              '& .MuiDataGrid-cell': { borderColor: 'rgba(233,30,140,0.08)' },
-              '& .MuiDataGrid-footerContainer': { borderTop: '1.5px solid rgba(233,30,140,0.12)' },
+              '& .MuiDataGrid-row:hover': { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+              '& .MuiDataGrid-cell': { borderColor: 'rgba(var(--color-primary-rgb),0.08)' },
+              '& .MuiDataGrid-footerContainer': { borderTop: '1.5px solid rgba(var(--color-primary-rgb),0.12)' },
             }}
           />
         </Paper>
@@ -628,7 +629,7 @@ const SalesReportPage = () => {
       >
         <DialogTitle
           sx={{
-            background: 'linear-gradient(135deg,#E91E8C,#9C27B0)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
             color: '#fff',
             display: 'flex',
             alignItems: 'center',
@@ -659,7 +660,7 @@ const SalesReportPage = () => {
         <DialogContent dividers sx={{ p: 0, bgcolor: '#FAFBFF' }}>
           {reprintLoading ? (
             <Box sx={{ py: 6, display: 'flex', justifyContent: 'center' }}>
-              <CircularProgress sx={{ color: '#E91E8C' }} />
+              <CircularProgress sx={{ color: 'primary.main' }} />
             </Box>
           ) : (
             <ThermalBillPreview
@@ -676,7 +677,7 @@ const SalesReportPage = () => {
           <Button
             variant="outlined"
             onClick={closeReprint}
-            sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha('#E91E8C', 0.5), color: '#E91E8C', '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.05) } }}
+            sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha(theme.palette.primary.main, 0.5), color: 'primary.main', '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) } }}
           >
             Close
           </Button>
@@ -685,7 +686,7 @@ const SalesReportPage = () => {
             startIcon={<PrintRoundedIcon />}
             onClick={handlePrint}
             disabled={reprintLoading}
-            sx={{ flex: 1, borderRadius: 2.5, background: 'linear-gradient(135deg,#E91E8C,#9C27B0)', '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' } }}
+            sx={{ flex: 1, borderRadius: 2.5, background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` } }}
           >
             Print
           </Button>

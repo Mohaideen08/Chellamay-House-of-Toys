@@ -12,32 +12,60 @@ import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import CloseRounded from '@mui/icons-material/CloseRounded';
-import Barcode from 'react-barcode';
+import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../services/supabase';
 import { useSnackbar } from '../context/SnackbarContext';
 import dayjs from 'dayjs';
 
 // ─── Sticker Print Template (inline styles – works in print window) ──────────
 const StickerPreview = ({ items }) => {
+  const now = dayjs().format('DD/MM/YY');
   return (
-    <div style={{ padding: 8 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+    <div style={{ padding: 14, background: '#e0e0e0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {items.flatMap((item) =>
           Array.from({ length: item.qty }, (_, i) => {
             const code = item.product.barcode || item.product.item_code || String(item.product.id);
             return (
               <div
                 key={`${item.product.id}-${i}`}
-                style={{ border: '1px dashed #ccc', borderRadius: 4, padding: 6, textAlign: 'center', backgroundColor: '#fff', pageBreakInside: 'avoid' }}
+                style={{
+                  width: '100%',
+                  aspectRatio: '50/30',
+                  border: '1px solid #ccc',
+                  borderRadius: 5,
+                  backgroundColor: '#fff',
+                  fontFamily: 'Arial, sans-serif',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: '4px 5px',
+                  boxSizing: 'border-box',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+                }}
               >
-                <div style={{ fontSize: 8, fontWeight: 700, lineHeight: 1.3, marginBottom: 2, color: '#111', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  {item.product.name}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <Barcode value={code} width={1.2} height={40} fontSize={8} margin={0} displayValue background="#fff" lineColor="#000" />
-                </div>
-                <div style={{ fontSize: 9, fontWeight: 800, color: '#E91E8C', marginTop: 2 }}>
-                  MRP: ₹{Number(item.product.mrp).toFixed(2)}
+                {/* Body: QR left | info right */}
+                <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 5 }}>
+
+                  {/* Shop name above QR Code */}
+                  <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: '#111', letterSpacing: 0.3, marginBottom: 2 }}>செல்லமே</div>
+                    <QRCodeSVG value={code} size={40} level="M" />
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1 }}>
+                    <div style={{ fontSize: 6, color: '#444', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {item.product.name}
+                    </div>
+                    <div style={{ fontSize: 10, fontWeight: 900, color: '#000', letterSpacing: 0.2 }}>
+                      MRP. {Number(item.product.mrp).toFixed(2)}
+                    </div>
+                    <div style={{ fontSize: 7, color: '#333', fontFamily: 'monospace', fontWeight: 600 }}>
+                      *{code}*
+                    </div>
+                    <div style={{ fontSize: 5.5, color: '#888', marginTop: 1 }}>{now}</div>
+                  </div>
                 </div>
               </div>
             );
@@ -75,15 +103,25 @@ const QRStickerPage = () => {
     const win = window.open('', '_blank', 'width=900,height=700');
     if (!win) { showSnackbar('Pop-up blocked – allow pop-ups and try again', 'warning'); return; }
     const itemsSnap = selectedItemsRef.current;
-    const html = itemsSnap.flatMap((item) =>
+    const now = dayjs().format('DD/MM/YY');
+    const stickers = itemsSnap.flatMap((item) =>
       Array.from({ length: item.qty }, (_, i) => {
-        const svgEl = document.querySelector(`[data-barcode-id="${item.product.id}-${i}"]`);
-        const svgHtml = svgEl ? svgEl.outerHTML : '';
-        return `<div class="sticker"><div class="name">${item.product.name}</div>${svgHtml}<div class="price">MRP: &#8377;${Number(item.product.mrp).toFixed(2)}</div></div>`;
+        const code = item.product.barcode || item.product.item_code || String(item.product.id);
+        const qrEl = document.querySelector(`[data-qr-id="${item.product.id}-${i}"] svg`);
+        const qrHtml = qrEl ? qrEl.outerHTML : '';
+        const pname = `<div class="pname">${item.product.name}</div>`;
+        return `<div class="sticker"><div class="body"><div class="qr"><div class="shop">\u0b9a\u0bc6\u0bb2\u0bcd\u0bb2\u0bae\u0bc7</div>${qrHtml}</div><div class="info">${pname}<div class="price">MRP. ${Number(item.product.mrp).toFixed(2)}</div><div class="code">*${code}*</div><div class="dt">${now}</div></div></div></div>`;
       })
-    ).join('');
-    const styles = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:sans-serif;padding:8px;background:#fff}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.sticker{border:1px dashed #ccc;border-radius:4px;padding:6px;text-align:center;page-break-inside:avoid;background:#fff}.name{font-size:8px;font-weight:700;line-height:1.3;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#111}.price{font-size:9px;font-weight:800;color:#E91E8C;margin-top:2px}svg{max-width:100%}@page{margin:0.5cm}`;
-    win.document.write('<!DOCTYPE html><html><head><title>Chellamay Toys Barcode Stickers</title><style>' + styles + '</style></head><body><div class="grid">' + html + '</div></body></html>');
+    );
+    // Group 3 stickers per page for LP 46 Lite
+    const pages = [];
+    for (let g = 0; g < stickers.length; g += 3) {
+      pages.push(`<div class="page">${stickers.slice(g, g + 3).join('')}</div>`);
+    }
+    const html = pages.join('');
+    // LP 46 Lite: 50mm x 90mm (3 stickers per label)
+    const styles = `@page{size:50mm 90mm;margin:0}*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#fff}.page{width:50mm;height:90mm;display:flex;flex-direction:column;page-break-after:always}.sticker{width:50mm;height:30mm;overflow:hidden;display:flex;flex-direction:column;padding:3pt 4pt;background:#fff}.body{display:flex;align-items:center;flex:1;gap:4pt}.qr{flex-shrink:0;display:flex;flex-direction:column;align-items:center}.shop{font-size:6pt;font-weight:700;color:#111;letter-spacing:0.3px;margin-bottom:1.5pt;text-align:center}.qr svg{width:22mm;height:22mm}.info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:1pt}.pname{font-size:5pt;color:#444;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.price{font-size:9.5pt;font-weight:900;color:#000}.code{font-size:6pt;font-weight:600;color:#333;font-family:monospace}.dt{font-size:4.5pt;color:#888;margin-top:1pt}`;
+    win.document.write('<!DOCTYPE html><html><head><title>Chellamay Toys Barcode Stickers</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
     win.document.close();
     win.focus();
     setTimeout(() => { win.print(); win.close(); }, 600);
@@ -165,11 +203,11 @@ const QRStickerPage = () => {
           ...fadeInUp(0),
           mb: 2.5,
           borderRadius: '8px',
-          background: 'linear-gradient(135deg, #E91E8C 0%, #9C27B0 60%, #6A1B9A 100%)',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 60%, ${theme.palette.secondary.dark} 100%)`,
           px: { xs: 2, sm: 2.5 }, py: 1.4,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexWrap: 'wrap', gap: 1.5,
-          boxShadow: '0 4px 18px rgba(233,30,140,0.32)',
+          boxShadow: '0 4px 18px rgba(var(--color-primary-rgb),0.32)',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -231,7 +269,7 @@ const QRStickerPage = () => {
           ...fadeInUp(0.12),
           borderRadius: '8px',
           border: '1.5px solid',
-          borderColor: 'rgba(233,30,140,0.13)',
+          borderColor: 'rgba(var(--color-primary-rgb),0.13)',
           overflow: 'hidden',
         }}
       >
@@ -240,7 +278,7 @@ const QRStickerPage = () => {
           px: { xs: 1.5, sm: 2.5 }, py: 1.8,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexWrap: 'wrap', gap: 1.5,
-          borderBottom: '1.5px solid rgba(233,30,140,0.1)',
+          borderBottom: '1.5px solid rgba(var(--color-primary-rgb),0.1)',
           bgcolor: '#fff',
         }}>
           <Stack direction="row" alignItems="center" spacing={1.2}>
@@ -249,14 +287,14 @@ const QRStickerPage = () => {
               <Chip
                 label={`${filtered.length} item${filtered.length !== 1 ? 's' : ''}`}
                 size="small"
-                sx={{ bgcolor: alpha('#E91E8C', 0.1), color: '#AD1457', fontWeight: 700, fontSize: '0.7rem' }}
+                sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: 'primary.dark', fontWeight: 700, fontSize: '0.7rem' }}
               />
             )}
             {selected.length > 0 && (
               <Chip
                 label={`${selected.length} checked`}
                 size="small"
-                sx={{ bgcolor: alpha('#9C27B0', 0.1), color: '#6A1B9A', fontWeight: 700, fontSize: '0.7rem' }}
+                sx={{ bgcolor: alpha(theme.palette.secondary.main, 0.1), color: 'secondary.dark', fontWeight: 700, fontSize: '0.7rem' }}
               />
             )}
           </Stack>
@@ -269,11 +307,11 @@ const QRStickerPage = () => {
               width: { xs: '100%', sm: 280 },
               '& .MuiOutlinedInput-root': {
                 borderRadius: '10px',
-                bgcolor: alpha('#E91E8C', 0.04),
-                '& fieldset': { borderColor: 'rgba(233,30,140,0.22)' },
-                '&:hover fieldset': { borderColor: 'rgba(233,30,140,0.45)' },
-                '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
-                '&.Mui-focused': { boxShadow: '0 0 0 3px rgba(233,30,140,0.12)' },
+                bgcolor: alpha(theme.palette.primary.main, 0.04),
+                '& fieldset': { borderColor: 'rgba(var(--color-primary-rgb),0.22)' },
+                '&:hover fieldset': { borderColor: 'rgba(var(--color-primary-rgb),0.45)' },
+                '&.Mui-focused fieldset': { bordercolor: 'primary.main' },
+                '&.Mui-focused': { boxShadow: '0 0 0 3px rgba(var(--color-primary-rgb),0.12)' },
               },
               '& input': { fontSize: '0.8rem' },
               '& input::placeholder': { fontSize: '0.77rem', opacity: 0.7 },
@@ -281,7 +319,7 @@ const QRStickerPage = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ fontSize: 18, color: '#E91E8C' }} />
+                  <SearchRoundedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                 </InputAdornment>
               ),
               endAdornment: searchText ? (
@@ -295,13 +333,13 @@ const QRStickerPage = () => {
           />
         </Box>
 
-        {loading && <LinearProgress sx={{ '& .MuiLinearProgress-bar': { background: 'linear-gradient(90deg,#E91E8C,#9C27B0)' } }} />}
+        {loading && <LinearProgress sx={{ '& .MuiLinearProgress-bar': { background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})` } }} />}
 
         <TableContainer sx={{ maxHeight: 520 }}>
           <Table stickyHeader size="small">
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox" sx={{ background: 'linear-gradient(135deg, rgba(233,30,140,0.09) 0%, rgba(156,39,176,0.09) 100%)' }}>
+                <TableCell padding="checkbox" sx={{ background: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.09) 0%, rgba(var(--color-secondary-rgb),0.09) 100%)' }}>
                   <Checkbox
                     indeterminate={selected.length > 0 && selected.length < filtered.length}
                     checked={filtered.length > 0 && selected.length === filtered.length}
@@ -316,8 +354,8 @@ const QRStickerPage = () => {
                     key={h}
                     align={h === 'Product Name' || h === 'Date Added' ? 'left' : 'center'}
                     sx={{
-                      background: 'linear-gradient(135deg, rgba(233,30,140,0.09) 0%, rgba(156,39,176,0.09) 100%)',
-                      fontWeight: 700, fontSize: '0.72rem', color: '#AD1457',
+                      background: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.09) 0%, rgba(var(--color-secondary-rgb),0.09) 100%)',
+                      fontWeight: 700, fontSize: '0.72rem', color: 'primary.dark',
                       whiteSpace: 'nowrap', py: 1.2,
                       letterSpacing: '0.04em', textTransform: 'uppercase',
                     }}
@@ -348,16 +386,16 @@ const QRStickerPage = () => {
                     sx={{
                       cursor: 'pointer',
                       bgcolor: isSelected
-                        ? 'linear-gradient(90deg, rgba(233,30,140,0.06) 0%, rgba(156,39,176,0.06) 100%)'
+                        ? 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.06) 0%, rgba(var(--color-secondary-rgb),0.06) 100%)'
                         : 'inherit',
                       background: isSelected
-                        ? 'linear-gradient(90deg, rgba(233,30,140,0.06) 0%, rgba(156,39,176,0.06) 100%)'
+                        ? 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.06) 0%, rgba(var(--color-secondary-rgb),0.06) 100%)'
                         : 'inherit',
                       transition: 'background 0.18s ease',
                       '&:hover': {
                         background: isSelected
-                          ? 'linear-gradient(90deg, rgba(233,30,140,0.1) 0%, rgba(156,39,176,0.1) 100%)'
-                          : 'linear-gradient(90deg, rgba(233,30,140,0.03) 0%, rgba(156,39,176,0.03) 100%)',
+                          ? 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.1) 0%, rgba(var(--color-secondary-rgb),0.1) 100%)'
+                          : 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.03) 0%, rgba(var(--color-secondary-rgb),0.03) 100%)',
                       },
                     }}
                   >
@@ -390,8 +428,8 @@ const QRStickerPage = () => {
                         size="small"
                         sx={{
                           fontSize: '0.68rem', fontWeight: 700, height: 22,
-                          bgcolor: alpha('#9C27B0', 0.08), color: '#6A1B9A',
-                          border: `1px solid ${alpha('#9C27B0', 0.22)}`,
+                          bgcolor: alpha(theme.palette.secondary.main, 0.08), color: 'secondary.dark',
+                          border: `1px solid ${alpha(theme.palette.secondary.main, 0.22)}`,
                         }}
                       />
                     </TableCell>
@@ -399,16 +437,16 @@ const QRStickerPage = () => {
                     <TableCell align="center">
                       <Typography sx={{
                         fontFamily: 'monospace', fontSize: '0.74rem',
-                        bgcolor: alpha('#E91E8C', 0.07),
+                        bgcolor: alpha(theme.palette.primary.main, 0.07),
                         px: 0.8, py: 0.3, borderRadius: 1,
-                        color: '#AD1457', fontWeight: 700, whiteSpace: 'nowrap',
+                        color: 'primary.dark', fontWeight: 700, whiteSpace: 'nowrap',
                       }}>
                         {barcodeCode}
                       </Typography>
                     </TableCell>
                     {/* MRP */}
                     <TableCell align="center">
-                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#E91E8C', whiteSpace: 'nowrap' }}>
+                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: 'primary.main', whiteSpace: 'nowrap' }}>
                         ₹{Number(product.mrp).toFixed(2)}
                       </Typography>
                     </TableCell>
@@ -449,8 +487,8 @@ const QRStickerPage = () => {
           Array.from({ length: item.qty }, (_, i) => {
             const code = item.product.barcode || item.product.item_code || String(item.product.id);
             return (
-              <span key={`${item.product.id}-${i}`} data-barcode-id={`${item.product.id}-${i}`}>
-                <Barcode value={code} width={1.2} height={40} fontSize={8} margin={0} displayValue background="#fff" lineColor="#000" />
+              <span key={`${item.product.id}-${i}`} data-qr-id={`${item.product.id}-${i}`}>
+                <QRCodeSVG value={code} size={84} level="M" />
               </span>
             );
           })
@@ -464,12 +502,12 @@ const QRStickerPage = () => {
         maxWidth="sm"
         fullWidth
         TransitionProps={{ timeout: 350 }}
-        PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(233,30,140,0.28)' } }}
+        PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(var(--color-primary-rgb),0.28)' } }}
       >
         {/* Dialog Header */}
         <DialogTitle sx={{ p: 0 }}>
           <Box sx={{
-            background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
             color: '#fff', px: { xs: 2, sm: 3 }, py: 2.5,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             position: 'relative', overflow: 'hidden',
@@ -504,11 +542,11 @@ const QRStickerPage = () => {
                   {/* Product info row */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                     <Box sx={{ width: 36, height: 36, borderRadius: 2, flexShrink: 0, background: 'linear-gradient(135deg, #EDE9FE, #DDD6FE)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: '#6D28D9' }}>{idx + 1}</Typography>
+                      <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: 'secondary.dark' }}>{idx + 1}</Typography>
                     </Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography variant="body2" fontWeight={700} noWrap>{product.name}</Typography>
-                      <Typography variant="caption" sx={{ color: '#7C3AED', fontFamily: 'monospace', fontWeight: 600 }}>{barcodeCode}</Typography>
+                      <Typography variant="caption" sx={{ color: 'secondary.main', fontFamily: 'monospace', fontWeight: 600 }}>{barcodeCode}</Typography>
                     </Box>
                     <Chip label={`${qty} sticker${qty !== 1 ? 's' : ''}`} size="small" color="secondary" sx={{ fontWeight: 700, flexShrink: 0 }} />
                   </Box>
@@ -539,22 +577,22 @@ const QRStickerPage = () => {
           {/* Summary bar */}
           <Box sx={{
             px: 3, py: 2,
-            background: 'linear-gradient(135deg, rgba(233,30,140,0.06) 0%, rgba(156,39,176,0.06) 100%)',
-            borderTop: '1.5px solid rgba(233,30,140,0.12)',
+            background: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.06) 0%, rgba(var(--color-secondary-rgb),0.06) 100%)',
+            borderTop: '1.5px solid rgba(var(--color-primary-rgb),0.12)',
             display: 'flex', alignItems: 'center', gap: 3,
           }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }} display="block">Products</Typography>
-              <Typography sx={{ fontSize: '1.3rem', fontWeight: 800, color: '#AD1457', lineHeight: 1.2 }}>{selected.length}</Typography>
+              <Typography sx={{ fontSize: '1.3rem', fontWeight: 800, color: 'primary.dark', lineHeight: 1.2 }}>{selected.length}</Typography>
             </Box>
             <Divider orientation="vertical" flexItem />
             <Box sx={{ textAlign: 'center' }}>
               <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }} display="block">Total Stickers</Typography>
-              <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: '#E91E8C', lineHeight: 1.2 }}>{totalStickers}</Typography>
+              <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: 'primary.main', lineHeight: 1.2 }}>{totalStickers}</Typography>
             </Box>
             <Box sx={{ flex: 1, textAlign: 'right' }}>
               <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>Printed on</Typography>
-              <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6A1B9A' }} display="block">
+              <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'secondary.dark' }} display="block">
                 {dayjs().format('DD MMM YYYY, hh:mm A')}
               </Typography>
             </Box>
@@ -568,8 +606,8 @@ const QRStickerPage = () => {
             onClick={() => setQtyDialogOpen(false)}
             sx={{
               flex: 1, py: 1.1, borderRadius: '10px',
-              borderColor: 'rgba(233,30,140,0.35)', color: '#E91E8C',
-              '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.04) },
+              borderColor: 'rgba(var(--color-primary-rgb),0.35)', color: 'primary.main',
+              '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.04) },
             }}
           >
             Cancel
@@ -580,8 +618,8 @@ const QRStickerPage = () => {
             onClick={() => { setQtyDialogOpen(false); setPreviewOpen(true); }}
             sx={{
               flex: 1, py: 1.1, borderRadius: '10px', fontWeight: 600,
-              borderColor: 'rgba(156,39,176,0.4)', color: '#9C27B0',
-              '&:hover': { bgcolor: alpha('#9C27B0', 0.05), borderColor: '#9C27B0' },
+              borderColor: 'rgba(var(--color-secondary-rgb),0.4)', color: 'secondary.main',
+              '&:hover': { bgcolor: alpha(theme.palette.secondary.main, 0.05), bordercolor: 'secondary.main' },
             }}
           >
             Preview
@@ -592,9 +630,9 @@ const QRStickerPage = () => {
             onClick={() => { setQtyDialogOpen(false); handlePrint(); }}
             sx={{
               flex: 2, py: 1.1, borderRadius: '10px', fontWeight: 700,
-              background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
-              boxShadow: '0 4px 15px rgba(233,30,140,0.35)',
-              '&:hover': { background: 'linear-gradient(135deg,#AD1457 0%,#6A1B9A 100%)', boxShadow: '0 6px 22px rgba(233,30,140,0.45)', transform: 'translateY(-1px)' },
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.35)',
+              '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`, boxShadow: '0 6px 22px rgba(var(--color-primary-rgb),0.45)', transform: 'translateY(-1px)' },
               transition: 'all 0.25s ease',
             }}
           >
@@ -607,12 +645,12 @@ const QRStickerPage = () => {
       <Dialog
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        maxWidth="md" fullWidth scroll="paper"
+        maxWidth="sm" fullWidth scroll="paper"
         TransitionProps={{ timeout: 350 }}
-        PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(233,30,140,0.25)' } }}
+        PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(var(--color-primary-rgb),0.25)' } }}
       >
         <Box sx={{
-          background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
           px: { xs: 2, sm: 3 }, py: 2,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
@@ -637,7 +675,7 @@ const QRStickerPage = () => {
           <Button
             variant="outlined"
             onClick={() => setPreviewOpen(false)}
-            sx={{ flex: 1, borderRadius: '10px', borderColor: 'rgba(233,30,140,0.35)', color: '#E91E8C', '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.04) } }}
+            sx={{ flex: 1, borderRadius: '10px', borderColor: 'rgba(var(--color-primary-rgb),0.35)', color: 'primary.main', '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.04) } }}
           >
             Close
           </Button>
@@ -647,9 +685,9 @@ const QRStickerPage = () => {
             onClick={() => { setPreviewOpen(false); handlePrint(); }}
             sx={{
               flex: 2, borderRadius: '10px', fontWeight: 700,
-              background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
-              boxShadow: '0 4px 15px rgba(233,30,140,0.35)',
-              '&:hover': { background: 'linear-gradient(135deg,#AD1457 0%,#6A1B9A 100%)', transform: 'translateY(-1px)' },
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.35)',
+              '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`, transform: 'translateY(-1px)' },
               transition: 'all 0.25s ease',
             }}
           >

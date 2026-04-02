@@ -140,7 +140,7 @@ const CategoriesPage = () => {
           size="small"
           sx={{
             fontSize: '0.72rem', fontWeight: 600,
-            bgcolor: alpha('#9C27B0', 0.08), color: '#6A1B9A',
+            bgcolor: alpha(theme.palette.secondary.main, 0.08), color: 'secondary.dark',
           }}
         />
       ),
@@ -160,8 +160,8 @@ const CategoriesPage = () => {
               size="small"
               onClick={() => openEdit(p.row)}
               sx={{
-                bgcolor: alpha('#E91E8C', 0.08), color: '#E91E8C',
-                '&:hover': { bgcolor: alpha('#E91E8C', 0.18), transform: 'scale(1.12)' },
+                bgcolor: alpha(theme.palette.primary.main, 0.08), color: 'primary.main',
+                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.18), transform: 'scale(1.12)' },
                 transition: 'all 0.2s ease',
               }}
             >
@@ -195,10 +195,10 @@ const CategoriesPage = () => {
           ...fadeInUp(0),
           mb: 2.5,
           borderRadius: "8px",
-          background: 'linear-gradient(135deg, #E91E8C 0%, #9C27B0 60%, #6A1B9A 100%)',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 60%, ${theme.palette.secondary.dark} 100%)`,
           px: { xs: 2, sm: 2.5 }, py: 1.4,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          boxShadow: '0 4px 18px rgba(233,30,140,0.32)',
+          boxShadow: '0 4px 18px rgba(var(--color-primary-rgb),0.32)',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -241,7 +241,7 @@ const CategoriesPage = () => {
           p: { xs: 1.5, sm: 2 },
           borderRadius: '8px',
           border: '1.5px solid',
-          borderColor: 'rgba(233,30,140,0.13)',
+          borderColor: 'rgba(var(--color-primary-rgb),0.13)',
           background: '#fff',
           display: 'flex',
           alignItems: 'center',
@@ -258,23 +258,23 @@ const CategoriesPage = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
+                <SearchRoundedIcon sx={{ color: 'primary.main', fontSize: 18 }} />
               </InputAdornment>
             ),
             sx: {
               borderRadius: '10px',
-              bgcolor: alpha('#E91E8C', 0.04),
+              bgcolor: alpha(theme.palette.primary.main, 0.04),
               '& input': { fontSize: '0.8rem' },
               '& input::placeholder': { fontSize: '0.77rem', opacity: 0.7 },
-              '&.Mui-focused': { bgcolor: '#fff', boxShadow: '0 0 0 3px rgba(233,30,140,0.12)' },
+              '&.Mui-focused': { bgcolor: '#fff', boxShadow: '0 0 0 3px rgba(var(--color-primary-rgb),0.12)' },
             },
           }}
           sx={{
             flex: 1,
             '& .MuiOutlinedInput-root': {
-              '& fieldset': { borderColor: 'rgba(233,30,140,0.22)' },
-              '&:hover fieldset': { borderColor: 'rgba(233,30,140,0.45)' },
-              '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+              '& fieldset': { borderColor: 'rgba(var(--color-primary-rgb),0.22)' },
+              '&:hover fieldset': { borderColor: 'rgba(var(--color-primary-rgb),0.45)' },
+              '&.Mui-focused fieldset': { bordercolor: 'primary.main' },
             },
           }}
         />
@@ -293,11 +293,11 @@ const CategoriesPage = () => {
             py: 1,
             fontSize: '0.85rem',
             borderRadius: 2.5,
-            background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
-            boxShadow: '0 4px 15px rgba(233,30,140,0.4)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+            boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.4)',
             '&:hover': {
-              background: 'linear-gradient(135deg,#AD1457 0%,#6A1B9A 100%)',
-              boxShadow: '0 6px 22px rgba(233,30,140,0.5)',
+              background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+              boxShadow: '0 6px 22px rgba(var(--color-primary-rgb),0.5)',
               transform: 'translateY(-2px)',
             },
             transition: 'all 0.25s ease',
@@ -315,7 +315,7 @@ const CategoriesPage = () => {
           ...fadeInUp(0.2),
           borderRadius: '8px',
           border: '1.5px solid',
-          borderColor: 'rgba(233,30,140,0.1)',
+          borderColor: 'rgba(var(--color-primary-rgb),0.1)',
           overflow: 'hidden',
         }}
       >
@@ -331,12 +331,12 @@ const CategoriesPage = () => {
             border: 'none',
             fontFamily: '"Poppins", sans-serif',
             '& .MuiDataGrid-columnHeaders': {
-              background: 'linear-gradient(135deg, rgba(233,30,140,0.09) 0%, rgba(156,39,176,0.09) 100%)',
-              borderBottom: '2px solid rgba(233,30,140,0.15)',
+              background: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.09) 0%, rgba(var(--color-secondary-rgb),0.09) 100%)',
+              borderBottom: '2px solid rgba(var(--color-primary-rgb),0.15)',
               '& .MuiDataGrid-columnHeaderTitle': {
                 fontWeight: 700,
                 fontSize: '0.78rem',
-                color: '#AD1457',
+                color: 'primary.dark',
                 letterSpacing: '0.05em',
                 textTransform: 'uppercase',
               },
@@ -344,7 +344,7 @@ const CategoriesPage = () => {
             '& .MuiDataGrid-row': {
               transition: 'background 0.2s ease',
               '&:hover': {
-                background: 'linear-gradient(90deg, rgba(233,30,140,0.04) 0%, rgba(156,39,176,0.04) 100%)',
+                background: 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.04) 0%, rgba(var(--color-secondary-rgb),0.04) 100%)',
               },
             },
             '& .MuiDataGrid-cell': {
@@ -352,8 +352,8 @@ const CategoriesPage = () => {
               '&:focus, &:focus-within': { outline: 'none' },
             },
             '& .MuiDataGrid-footerContainer': {
-              borderTop: '1px solid rgba(233,30,140,0.12)',
-              bgcolor: 'rgba(233,30,140,0.02)',
+              borderTop: '1px solid rgba(var(--color-primary-rgb),0.12)',
+              bgcolor: 'rgba(var(--color-primary-rgb),0.02)',
             },
             '& .MuiTablePagination-root': { fontSize: '0.8rem' },
           }}
@@ -371,14 +371,14 @@ const CategoriesPage = () => {
           sx: {
             borderRadius: '10px',
             overflow: 'hidden',
-            boxShadow: '0 24px 64px rgba(233,30,140,0.28)',
+            boxShadow: '0 24px 64px rgba(var(--color-primary-rgb),0.28)',
           },
         }}
       >
         {/* Dialog Header */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
             px: { xs: 2, sm: 3 }, py: 2.5,
             display: 'flex', alignItems: 'center', gap: 2,
             position: 'relative', overflow: 'hidden',
@@ -429,9 +429,9 @@ const CategoriesPage = () => {
               mt: 0.5,
               '& .MuiOutlinedInput-root': {
                 borderRadius: '10px',
-                '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+                '&.Mui-focused fieldset': { bordercolor: 'primary.main' },
               },
-              '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+              '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
             }}
           />
         </DialogContent>
@@ -442,8 +442,8 @@ const CategoriesPage = () => {
             onClick={() => setDialogOpen(false)}
             sx={{
               flex: 1, py: 1.2, borderRadius: 2.5,
-              borderColor: 'rgba(233,30,140,0.35)', color: '#E91E8C',
-              '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.04) },
+              borderColor: 'rgba(var(--color-primary-rgb),0.35)', color: 'primary.main',
+              '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.04) },
             }}
           >
             Cancel
@@ -454,14 +454,14 @@ const CategoriesPage = () => {
             disabled={saving}
             sx={{
               flex: 1, py: 1.2, borderRadius: 2.5,
-              background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
-              boxShadow: '0 4px 15px rgba(233,30,140,0.35)',
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.35)',
               '&:hover': {
-                background: 'linear-gradient(135deg,#AD1457 0%,#6A1B9A 100%)',
-                boxShadow: '0 6px 22px rgba(233,30,140,0.45)',
+                background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+                boxShadow: '0 6px 22px rgba(var(--color-primary-rgb),0.45)',
                 transform: 'translateY(-1px)',
               },
-              '&.Mui-disabled': { opacity: 0.65, background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)' },
+              '&.Mui-disabled': { opacity: 0.65, background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`},
               transition: 'all 0.25s ease',
             }}
           >

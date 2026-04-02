@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
-import theme from './theme';
+import { createAppTheme } from './theme';
+import { ThemeContextProvider, useThemeContext } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SnackbarProvider } from './context/SnackbarContext';
 
@@ -58,9 +59,11 @@ const AppRoutes = () => {
   );
 };
 
-function App() {
+function ThemedApp() {
+  const { activeTheme } = useThemeContext();
+  const muiTheme = createAppTheme(activeTheme);
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={muiTheme}>
       <CssBaseline />
       <AuthProvider>
         <SnackbarProvider>
@@ -68,6 +71,14 @@ function App() {
         </SnackbarProvider>
       </AuthProvider>
     </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeContextProvider>
+      <ThemedApp />
+    </ThemeContextProvider>
   );
 }
 

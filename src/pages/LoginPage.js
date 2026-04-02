@@ -246,14 +246,14 @@ const LoginPage = () => {
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '12px',
                       background: '#f8f8fb',
-                      '&:hover fieldset': { borderColor: '#e91e8c' },
-                      '&.Mui-focused fieldset': { borderColor: '#e91e8c', borderWidth: '2px' },
+                      '&:hover fieldset': { bordercolor: 'primary.main' },
+                      '&.Mui-focused fieldset': { bordercolor: 'primary.main', borderWidth: '2px' },
                     },
                   }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <EmailRoundedIcon sx={{ color: '#e91e8c', fontSize: 20 }} />
+                        <EmailRoundedIcon sx={{ color: 'primary.main', fontSize: 20 }} />
                       </InputAdornment>
                     ),
                   }}
@@ -279,14 +279,14 @@ const LoginPage = () => {
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '12px',
                       background: '#f8f8fb',
-                      '&:hover fieldset': { borderColor: '#e91e8c' },
-                      '&.Mui-focused fieldset': { borderColor: '#e91e8c', borderWidth: '2px' },
+                      '&:hover fieldset': { bordercolor: 'primary.main' },
+                      '&.Mui-focused fieldset': { bordercolor: 'primary.main', borderWidth: '2px' },
                     },
                   }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <LockRoundedIcon sx={{ color: '#e91e8c', fontSize: 20 }} />
+                        <LockRoundedIcon sx={{ color: 'primary.main', fontSize: 20 }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -296,7 +296,7 @@ const LoginPage = () => {
                           edge="end"
                           size="small"
                           tabIndex={-1}
-                          sx={{ color: '#e91e8c' }}
+                          sx={{ color: 'primary.main' }}
                         >
                           {showPassword
                             ? <VisibilityOffRoundedIcon fontSize="small" />
@@ -319,12 +319,12 @@ const LoginPage = () => {
                     fontWeight: 800,
                     borderRadius: '12px',
                     background: 'linear-gradient(135deg, #c2185b 0%, #e91e8c 100%)',
-                    boxShadow: '0 10px 30px rgba(233,30,140,0.42)',
+                    boxShadow: '0 10px 30px rgba(var(--color-primary-rgb),0.42)',
                     letterSpacing: 0.4,
                     '&:hover': {
                       background: 'linear-gradient(135deg, #ad1457 0%, #d81b60 100%)',
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 16px 40px rgba(233,30,140,0.55)',
+                      boxShadow: '0 16px 40px rgba(var(--color-primary-rgb),0.55)',
                     },
                     '&:active': { transform: 'translateY(0)' },
                     transition: 'all 0.25s ease',
