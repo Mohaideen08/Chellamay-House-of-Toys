@@ -47,8 +47,8 @@ const shimmer = keyframes`
 
 // eslint-disable-next-line no-unused-vars
 const pulseGlow = keyframes`
-  0%, 100% { box-shadow: 0 0 0 0 rgba(233,30,140,0); }
-  50%       { box-shadow: 0 0 0 8px rgba(233,30,140,0.12); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb),0); }
+  50%       { box-shadow: 0 0 0 8px rgba(var(--color-primary-rgb),0.12); }
 `;
 
 const rotateSlow = keyframes`
@@ -305,7 +305,7 @@ const Dashboard = () => {
       value: stats.products.toLocaleString(),
       icon: Inventory2RoundedIcon,
       gradient: 'linear-gradient(135deg,#E91E8C,#F06292)',
-      glowColor: 'rgba(233,30,140,0.28)',
+      glowColor: 'rgba(var(--color-primary-rgb),0.28)',
       subtitle: 'items in inventory',
       delay: 120,
     },
@@ -343,7 +343,7 @@ const Dashboard = () => {
           position: 'relative',
           background: 'linear-gradient(135deg, #0F0C29 0%, #24243e 40%, #302b63 75%, #3a1c71 100%)',
           p: { xs: 2.5, sm: 3, md: 3.5 },
-          boxShadow: '0 20px 60px rgba(15,23,42,0.35), 0 4px 20px rgba(233,30,140,0.15)',
+          boxShadow: '0 20px 60px rgba(15,23,42,0.35), 0 4px 20px rgba(var(--color-primary-rgb),0.15)',
           animation: `${slideRight} 0.5s cubic-bezier(0.34,1.56,0.64,1) both`,
         }}
       >
@@ -351,7 +351,7 @@ const Dashboard = () => {
         <Box sx={{
           position: 'absolute', top: -50, right: -50, width: 220, height: 220,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(233,30,140,0.25) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(var(--color-primary-rgb),0.25) 0%, transparent 70%)',
           pointerEvents: 'none', animation: `${rotateSlow} 20s linear infinite`,
         }} />
         <Box sx={{
@@ -526,7 +526,7 @@ const Dashboard = () => {
               width: { xs: 34, sm: 40 }, height: { xs: 34, sm: 40 }, borderRadius: { xs: 2, sm: 2.5 },
               background: 'linear-gradient(135deg,#E91E8C,#7C3AED)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(233,30,140,0.35)',
+              boxShadow: '0 4px 16px rgba(var(--color-primary-rgb),0.35)',
               flexShrink: 0,
             }}
           >
@@ -548,7 +548,7 @@ const Dashboard = () => {
             label={`${recentSales.length} records`}
             size="small"
             sx={{
-              bgcolor: '#F3E8FF', color: '#7C3AED', fontWeight: 700,
+              bgcolor: '#F3E8FF', color: 'secondary.main', fontWeight: 700,
               fontSize: '0.6rem', height: 22, border: '1px solid #DDD6FE',
               '& .MuiChip-label': { px: 0.9 },
             }}

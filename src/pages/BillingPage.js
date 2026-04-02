@@ -4,7 +4,7 @@ import {
   IconButton, Tooltip, Chip, Dialog, DialogTitle, DialogContent,
   DialogActions, Autocomplete, Alert,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { DataGrid } from '@mui/x-data-grid';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
@@ -127,6 +127,7 @@ const ThermalBillPreview = ({ billItems, billNumber, billDate, discount, total, 
 
 const BillingPage = () => {
   const { showSnackbar } = useSnackbar();
+  const theme = useTheme();
   const { user, profile } = useAuth();
 
   const [products, setProducts] = useState([]);
@@ -590,7 +591,7 @@ const BillingPage = () => {
     {
       field: 'final_price', headerName: 'Final Price', flex: 0.7, headerAlign: 'center', align: 'center',
       renderCell: (p) => (
-        <Typography variant="body2" fontWeight={600} sx={{ color: '#7C3AED' }}>
+        <Typography variant="body2" fontWeight={600} sx={{ color: 'secondary.main' }}>
           {p.row.product?.final_price != null ? `₹${Number(p.row.product.final_price).toFixed(2)}` : '—'}
         </Typography>
       ),
@@ -630,7 +631,7 @@ const BillingPage = () => {
         sx={{
           mb: 2,
           borderRadius: '8px',
-          background: 'linear-gradient(135deg, #E91E8C 0%, #9C27B0 60%, #6A1B9A 100%)',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 60%, ${theme.palette.secondary.dark} 100%)`,
           px: { xs: 2, sm: 2.5 },
           py: 1.4,
           display: 'flex',
@@ -758,8 +759,8 @@ const BillingPage = () => {
             px: 2,
             py: 1.5,
             borderRadius: '8px',
-            border: '1.5px solid rgba(233,30,140,0.18)',
-            bgcolor: alpha('#E91E8C', 0.02),
+            border: '1.5px solid rgba(var(--color-primary-rgb),0.18)',
+            bgcolor: alpha(theme.palette.primary.main, 0.02),
             flexWrap: { xs: 'wrap', sm: 'nowrap' },
             ...fadeInUp(0.06),
           }}
@@ -776,10 +777,10 @@ const BillingPage = () => {
               '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
               '& .MuiOutlinedInput-root': {
                 borderRadius: '10px',
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
               },
-              '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+              '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
             }}
           />
           <TextField
@@ -795,10 +796,10 @@ const BillingPage = () => {
               '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
               '& .MuiOutlinedInput-root': {
                 borderRadius: '10px',
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
               },
-              '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+              '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
             }}
           />
         </Paper>
@@ -818,13 +819,13 @@ const BillingPage = () => {
             px: 2,
             py: 1.2,
             borderRadius: '8px',
-            border: '1.5px solid rgba(233,30,140,0.18)',
-            bgcolor: alpha('#E91E8C', 0.03),
+            border: '1.5px solid rgba(var(--color-primary-rgb),0.18)',
+            bgcolor: alpha(theme.palette.primary.main, 0.03),
             flexWrap: { xs: 'wrap', sm: 'nowrap' },
             ...fadeInUp(0.08),
           }}
         >
-          <QrCodeScannerRoundedIcon sx={{ color: '#E91E8C', fontSize: 26, flexShrink: 0 }} />
+          <QrCodeScannerRoundedIcon sx={{ color: 'primary.main', fontSize: 26, flexShrink: 0 }} />
           <TextField
             inputRef={scanInputRef}
             size="small"
@@ -838,8 +839,8 @@ const BillingPage = () => {
               '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
               '& .MuiOutlinedInput-root': {
                 borderRadius: '10px',
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
               },
             }}
           />
@@ -848,14 +849,14 @@ const BillingPage = () => {
             size="small"
             variant="contained"
             sx={{
-              background: 'linear-gradient(135deg,#E91E8C,#9C27B0)',
+              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
               minWidth: 72,
               borderRadius: 2.5,
               fontSize: '0.82rem',
               fontWeight: 700,
               px: 2,
               flexShrink: 0,
-              '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' },
+              '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` },
             }}
           >
             Add
@@ -883,8 +884,8 @@ const BillingPage = () => {
             px: 2,
             py: 1.2,
             borderRadius: '8px',
-            border: '1.5px solid rgba(233,30,140,0.15)',
-            bgcolor: alpha('#E91E8C', 0.03),
+            border: '1.5px solid rgba(var(--color-primary-rgb),0.15)',
+            bgcolor: alpha(theme.palette.primary.main, 0.03),
             flexWrap: 'wrap',
             alignItems: 'center',
             ...fadeInUp(0.12),
@@ -893,15 +894,15 @@ const BillingPage = () => {
           <Chip
             label={`${billItems.length} item${billItems.length !== 1 ? 's' : ''}`}
             size="small"
-            sx={{ bgcolor: alpha('#E91E8C', 0.12), color: '#AD1457', fontWeight: 700, border: '1px solid rgba(233,30,140,0.25)' }}
+            sx={{ bgcolor: alpha(theme.palette.primary.main, 0.12), color: 'primary.dark', fontWeight: 700, border: '1px solid rgba(var(--color-primary-rgb),0.25)' }}
           />
           <Chip
             label={`Subtotal: ₹${subtotal.toFixed(2)}`}
             size="small"
-            sx={{ bgcolor: alpha('#9C27B0', 0.1), color: '#6A1B9A', fontWeight: 600, border: '1px solid rgba(156,39,176,0.2)' }}
+            sx={{ bgcolor: alpha(theme.palette.secondary.main, 0.1), color: 'secondary.dark', fontWeight: 600, border: '1px solid rgba(var(--color-secondary-rgb),0.2)' }}
           />
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" fontWeight={600} sx={{ color: '#AD1457', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+            <Typography variant="body2" fontWeight={600} sx={{ color: 'primary.dark', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
               GST %:
             </Typography>
             <TextField
@@ -914,8 +915,8 @@ const BillingPage = () => {
                 width: 90,
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '10px',
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
                 },
               }}
               InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
@@ -939,7 +940,7 @@ const BillingPage = () => {
           )}
           <Chip
             label={`Total: ₹${netAmount.toFixed(2)}`}
-            sx={{ background: 'linear-gradient(135deg,#E91E8C,#9C27B0)', color: '#fff', fontWeight: 700, fontSize: '0.88rem', border: 'none' }}
+            sx={{ background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, color: '#fff', fontWeight: 700, fontSize: '0.88rem', border: 'none' }}
           />
         </Paper>
       )}
@@ -949,7 +950,7 @@ const BillingPage = () => {
         elevation={0}
         sx={{
           borderRadius: '8px',
-          border: '1.5px solid rgba(233,30,140,0.1)',
+          border: '1.5px solid rgba(var(--color-primary-rgb),0.1)',
           overflow: 'hidden',
           ...fadeInUp(0.18),
         }}
@@ -969,9 +970,9 @@ const BillingPage = () => {
                 startIcon={<AddRoundedIcon />}
                 onClick={() => setAddItemOpen(true)}
                 sx={{
-                  background: 'linear-gradient(135deg,#E91E8C,#9C27B0)',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                   borderRadius: 2.5,
-                  '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' },
+                  '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` },
                 }}
               >
                 Add First Item
@@ -988,9 +989,9 @@ const BillingPage = () => {
             sx={{
               border: 'none',
               '& .MuiDataGrid-columnHeaders': {
-                background: 'linear-gradient(90deg, rgba(233,30,140,0.08) 0%, rgba(156,39,176,0.08) 100%)',
+                background: 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.08) 0%, rgba(var(--color-secondary-rgb),0.08) 100%)',
                 borderRadius: '8px 8px 0 0',
-                borderBottom: '2px solid rgba(233,30,140,0.2)',
+                borderBottom: '2px solid rgba(var(--color-primary-rgb),0.2)',
               },
               '& .MuiDataGrid-columnHeader': {
                 color: '#fff',
@@ -1005,8 +1006,8 @@ const BillingPage = () => {
               '& .MuiDataGrid-columnSeparator': { color: 'rgba(173,20,87,0.3)' },
               '& .MuiDataGrid-sortIcon': { color: '#AD1457 !important' },
               '& .MuiDataGrid-menuIconButton': { color: '#AD1457 !important' },
-              '& .MuiDataGrid-row:hover': { bgcolor: alpha('#E91E8C', 0.04) },
-              '& .MuiDataGrid-cell': { borderColor: 'rgba(233,30,140,0.08)' },
+              '& .MuiDataGrid-row:hover': { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+              '& .MuiDataGrid-cell': { borderColor: 'rgba(var(--color-primary-rgb),0.08)' },
             }}
           />
         )}
@@ -1025,7 +1026,7 @@ const BillingPage = () => {
       >
         <DialogTitle
           sx={{
-            background: 'linear-gradient(135deg,#E91E8C,#9C27B0)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
             color: '#fff',
             display: 'flex',
             alignItems: 'center',
@@ -1072,7 +1073,7 @@ const BillingPage = () => {
           <Button
             variant="outlined"
             onClick={() => setPreviewOpen(false)}
-            sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha('#E91E8C', 0.5), color: '#E91E8C', '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.05) } }}
+            sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha(theme.palette.primary.main, 0.5), color: 'primary.main', '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) } }}
           >
             Close
           </Button>
@@ -1081,7 +1082,7 @@ const BillingPage = () => {
             startIcon={<PrintRoundedIcon />}
             onClick={handleSaveAndPrint}
             disabled={saving}
-            sx={{ flex: 1, borderRadius: 2.5, background: 'linear-gradient(135deg,#E91E8C,#9C27B0)', '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' } }}
+            sx={{ flex: 1, borderRadius: 2.5, background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` } }}
           >
             {saving ? 'Saving…' : 'Print Bill'}
           </Button>
@@ -1098,7 +1099,7 @@ const BillingPage = () => {
       >
         <DialogTitle
           sx={{
-            background: 'linear-gradient(135deg,#E91E8C,#9C27B0)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
             color: '#fff',
             display: 'flex',
             alignItems: 'center',
@@ -1140,10 +1141,10 @@ const BillingPage = () => {
                     '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '10px',
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
                     },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                   }}
                 />
               )}
@@ -1160,11 +1161,11 @@ const BillingPage = () => {
             />
 
             {selectedProduct && (
-              <Box sx={{ p: 2, borderRadius: '8px', bgcolor: alpha('#E91E8C', 0.05), border: `1px solid ${alpha('#E91E8C', 0.18)}` }}>
+              <Box sx={{ p: 2, borderRadius: '8px', bgcolor: alpha(theme.palette.primary.main, 0.05), border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}` }}>
                 <Typography variant="body2" fontWeight={600} color="#AD1457">{selectedProduct.name}</Typography>
                 <Stack direction="row" spacing={1} mt={0.5} flexWrap="wrap" gap={0.5}>
-                  <Chip label={`MRP: ₹${Number(selectedProduct.mrp).toFixed(2)}`} size="small" sx={{ bgcolor: alpha('#E91E8C', 0.1), color: '#AD1457' }} />
-                  <Chip label={`Sale: ₹${Number(selectedProduct.sales_price).toFixed(2)}`} size="small" sx={{ bgcolor: alpha('#9C27B0', 0.1), color: '#6A1B9A' }} />
+                  <Chip label={`MRP: ₹${Number(selectedProduct.mrp).toFixed(2)}`} size="small" sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: 'primary.dark' }} />
+                  <Chip label={`Sale: ₹${Number(selectedProduct.sales_price).toFixed(2)}`} size="small" sx={{ bgcolor: alpha(theme.palette.secondary.main, 0.1), color: 'secondary.dark' }} />
                   <Chip label={`Stock: ${selectedProduct.branch_quantity ?? 0}`} size="small" sx={{ bgcolor: alpha('#4CAF50', 0.1), color: '#2E7D32' }} />
                 </Stack>
               </Box>
@@ -1179,10 +1180,10 @@ const BillingPage = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '10px',
-                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
                   },
-                  '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                 }}
               />
               <TextField
@@ -1194,18 +1195,18 @@ const BillingPage = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '10px',
-                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#E91E8C' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
                   },
-                  '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                 }}
               />
             </Stack>
 
             {selectedProduct && (
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1.5, borderRadius: '8px', background: 'linear-gradient(135deg,rgba(233,30,140,0.08),rgba(156,39,176,0.08))' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1.5, borderRadius: '8px', background: 'linear-gradient(135deg,rgba(var(--color-primary-rgb),0.08),rgba(var(--color-secondary-rgb),0.08))' }}>
                 <Typography variant="body2" fontWeight={600} color="#AD1457">Item Total</Typography>
-                <Typography variant="body2" fontWeight={700} sx={{ background: 'linear-gradient(135deg,#E91E8C,#9C27B0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <Typography variant="body2" fontWeight={700} sx={{ background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   ₹{Math.max(0, selectedProduct.mrp * itemQty - Number(itemDiscount || 0)).toFixed(2)}
                 </Typography>
               </Box>
@@ -1216,14 +1217,14 @@ const BillingPage = () => {
           <Button
             variant="outlined"
             onClick={() => setAddItemOpen(false)}
-            sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha('#E91E8C', 0.5), color: '#E91E8C', '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.05) } }}
+            sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha(theme.palette.primary.main, 0.5), color: 'primary.main', '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) } }}
           >
             Cancel
           </Button>
           <Button
             variant="contained"
             onClick={handleAddItem}
-            sx={{ flex: 1, borderRadius: 2.5, background: 'linear-gradient(135deg,#E91E8C,#9C27B0)', '&:hover': { background: 'linear-gradient(135deg,#AD1457,#E91E8C)' } }}
+            sx={{ flex: 1, borderRadius: 2.5, background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` } }}
           >
             Add to Bill
           </Button>

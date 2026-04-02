@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box, Typography, Paper, Chip, Grid, Card, CardContent,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { DataGrid } from '@mui/x-data-grid';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
@@ -20,6 +20,7 @@ const fadeInUp = (delay = 0) => ({
 
 const LowStockPage = () => {
   const { profile } = useAuth();
+  const theme = useTheme();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [branchName, setBranchName] = useState(null);
@@ -88,7 +89,7 @@ const LowStockPage = () => {
     {
       field: 'category', headerName: 'Category', flex: 0.8, minWidth: 130,
       renderCell: (p) => (
-        <Chip label={p.value} size="small" sx={{ bgcolor: alpha('#9C27B0', 0.1), color: '#6A1B9A', fontWeight: 600, fontSize: '0.72rem', border: '1px solid rgba(156,39,176,0.2)' }} />
+        <Chip label={p.value} size="small" sx={{ bgcolor: alpha(theme.palette.secondary.main, 0.1), color: 'secondary.dark', fontWeight: 600, fontSize: '0.72rem', border: '1px solid rgba(var(--color-secondary-rgb),0.2)' }} />
       ),
     },
     {
@@ -121,7 +122,7 @@ const LowStockPage = () => {
         sx={{
           mb: 2,
           borderRadius: '8px',
-          background: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 60%, #DC2626 100%)',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 60%, ${theme.palette.secondary.dark} 100%)`,
           px: { xs: 2, sm: 2.5 },
           py: 1.4,
           display: 'flex',
@@ -160,7 +161,7 @@ const LowStockPage = () => {
         {[
           { label: 'Out of Stock', value: outOfStock, color: '#EF4444', icon: TrendingDownRoundedIcon },
           { label: 'Only 1 Left', value: oneLeft, color: '#F59E0B', icon: Inventory2RoundedIcon },
-          { label: 'Total Low Stock', value: rows.length, color: '#9C27B0', icon: WarningAmberRoundedIcon },
+          { label: 'Total Low Stock', value: rows.length, color: theme.palette.primary.main, icon: WarningAmberRoundedIcon },
         ].map((s, idx) => {
           const Icon = s.icon;
           return (
@@ -198,7 +199,7 @@ const LowStockPage = () => {
         elevation={0}
         sx={{
           borderRadius: '8px',
-          border: '1.5px solid rgba(245,158,11,0.15)',
+          border: `1.5px solid ${alpha(theme.palette.primary.main, 0.15)}`,
           overflow: 'hidden',
           ...fadeInUp(0.16),
         }}
@@ -214,23 +215,23 @@ const LowStockPage = () => {
           sx={{
             border: 'none',
             '& .MuiDataGrid-columnHeaders': {
-              background: 'linear-gradient(90deg, rgba(245,158,11,0.1) 0%, rgba(239,68,68,0.08) 100%)',
+              background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
               borderRadius: '8px 8px 0 0',
-              borderBottom: '2px solid rgba(245,158,11,0.25)',
+              borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.25)}`,
             },
             '& .MuiDataGrid-columnHeaderTitle': {
-              color: '#B45309 !important',
+              color: `${theme.palette.primary.dark} !important`,
               fontWeight: 700,
               fontSize: '0.78rem',
               textTransform: 'uppercase',
               letterSpacing: 0.6,
             },
-            '& .MuiDataGrid-columnSeparator': { color: 'rgba(180,83,9,0.2)' },
-            '& .MuiDataGrid-sortIcon': { color: '#B45309 !important' },
-            '& .MuiDataGrid-menuIconButton': { color: '#B45309 !important' },
-            '& .MuiDataGrid-row:hover': { bgcolor: alpha('#F59E0B', 0.04) },
-            '& .MuiDataGrid-cell': { borderColor: 'rgba(245,158,11,0.08)' },
-            '& .MuiDataGrid-footerContainer': { borderTop: '1.5px solid rgba(245,158,11,0.15)' },
+            '& .MuiDataGrid-columnSeparator': { color: alpha(theme.palette.primary.dark, 0.2) },
+            '& .MuiDataGrid-sortIcon': { color: `${theme.palette.primary.dark} !important` },
+            '& .MuiDataGrid-menuIconButton': { color: `${theme.palette.primary.dark} !important` },
+            '& .MuiDataGrid-row:hover': { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+            '& .MuiDataGrid-cell': { borderColor: alpha(theme.palette.primary.main, 0.08) },
+            '& .MuiDataGrid-footerContainer': { borderTop: `1.5px solid ${alpha(theme.palette.primary.main, 0.15)}` },
           }}
         />
       </Paper>

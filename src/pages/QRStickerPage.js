@@ -203,11 +203,11 @@ const QRStickerPage = () => {
           ...fadeInUp(0),
           mb: 2.5,
           borderRadius: '8px',
-          background: 'linear-gradient(135deg, #E91E8C 0%, #9C27B0 60%, #6A1B9A 100%)',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 60%, ${theme.palette.secondary.dark} 100%)`,
           px: { xs: 2, sm: 2.5 }, py: 1.4,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexWrap: 'wrap', gap: 1.5,
-          boxShadow: '0 4px 18px rgba(233,30,140,0.32)',
+          boxShadow: '0 4px 18px rgba(var(--color-primary-rgb),0.32)',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -269,7 +269,7 @@ const QRStickerPage = () => {
           ...fadeInUp(0.12),
           borderRadius: '8px',
           border: '1.5px solid',
-          borderColor: 'rgba(233,30,140,0.13)',
+          borderColor: 'rgba(var(--color-primary-rgb),0.13)',
           overflow: 'hidden',
         }}
       >
@@ -278,7 +278,7 @@ const QRStickerPage = () => {
           px: { xs: 1.5, sm: 2.5 }, py: 1.8,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexWrap: 'wrap', gap: 1.5,
-          borderBottom: '1.5px solid rgba(233,30,140,0.1)',
+          borderBottom: '1.5px solid rgba(var(--color-primary-rgb),0.1)',
           bgcolor: '#fff',
         }}>
           <Stack direction="row" alignItems="center" spacing={1.2}>
@@ -287,14 +287,14 @@ const QRStickerPage = () => {
               <Chip
                 label={`${filtered.length} item${filtered.length !== 1 ? 's' : ''}`}
                 size="small"
-                sx={{ bgcolor: alpha('#E91E8C', 0.1), color: '#AD1457', fontWeight: 700, fontSize: '0.7rem' }}
+                sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: 'primary.dark', fontWeight: 700, fontSize: '0.7rem' }}
               />
             )}
             {selected.length > 0 && (
               <Chip
                 label={`${selected.length} checked`}
                 size="small"
-                sx={{ bgcolor: alpha('#9C27B0', 0.1), color: '#6A1B9A', fontWeight: 700, fontSize: '0.7rem' }}
+                sx={{ bgcolor: alpha(theme.palette.secondary.main, 0.1), color: 'secondary.dark', fontWeight: 700, fontSize: '0.7rem' }}
               />
             )}
           </Stack>
@@ -307,11 +307,11 @@ const QRStickerPage = () => {
               width: { xs: '100%', sm: 280 },
               '& .MuiOutlinedInput-root': {
                 borderRadius: '10px',
-                bgcolor: alpha('#E91E8C', 0.04),
-                '& fieldset': { borderColor: 'rgba(233,30,140,0.22)' },
-                '&:hover fieldset': { borderColor: 'rgba(233,30,140,0.45)' },
-                '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
-                '&.Mui-focused': { boxShadow: '0 0 0 3px rgba(233,30,140,0.12)' },
+                bgcolor: alpha(theme.palette.primary.main, 0.04),
+                '& fieldset': { borderColor: 'rgba(var(--color-primary-rgb),0.22)' },
+                '&:hover fieldset': { borderColor: 'rgba(var(--color-primary-rgb),0.45)' },
+                '&.Mui-focused fieldset': { bordercolor: 'primary.main' },
+                '&.Mui-focused': { boxShadow: '0 0 0 3px rgba(var(--color-primary-rgb),0.12)' },
               },
               '& input': { fontSize: '0.8rem' },
               '& input::placeholder': { fontSize: '0.77rem', opacity: 0.7 },
@@ -319,7 +319,7 @@ const QRStickerPage = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ fontSize: 18, color: '#E91E8C' }} />
+                  <SearchRoundedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
                 </InputAdornment>
               ),
               endAdornment: searchText ? (
@@ -333,13 +333,13 @@ const QRStickerPage = () => {
           />
         </Box>
 
-        {loading && <LinearProgress sx={{ '& .MuiLinearProgress-bar': { background: 'linear-gradient(90deg,#E91E8C,#9C27B0)' } }} />}
+        {loading && <LinearProgress sx={{ '& .MuiLinearProgress-bar': { background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})` } }} />}
 
         <TableContainer sx={{ maxHeight: 520 }}>
           <Table stickyHeader size="small">
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox" sx={{ background: 'linear-gradient(135deg, rgba(233,30,140,0.09) 0%, rgba(156,39,176,0.09) 100%)' }}>
+                <TableCell padding="checkbox" sx={{ background: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.09) 0%, rgba(var(--color-secondary-rgb),0.09) 100%)' }}>
                   <Checkbox
                     indeterminate={selected.length > 0 && selected.length < filtered.length}
                     checked={filtered.length > 0 && selected.length === filtered.length}
@@ -354,8 +354,8 @@ const QRStickerPage = () => {
                     key={h}
                     align={h === 'Product Name' || h === 'Date Added' ? 'left' : 'center'}
                     sx={{
-                      background: 'linear-gradient(135deg, rgba(233,30,140,0.09) 0%, rgba(156,39,176,0.09) 100%)',
-                      fontWeight: 700, fontSize: '0.72rem', color: '#AD1457',
+                      background: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.09) 0%, rgba(var(--color-secondary-rgb),0.09) 100%)',
+                      fontWeight: 700, fontSize: '0.72rem', color: 'primary.dark',
                       whiteSpace: 'nowrap', py: 1.2,
                       letterSpacing: '0.04em', textTransform: 'uppercase',
                     }}
@@ -386,16 +386,16 @@ const QRStickerPage = () => {
                     sx={{
                       cursor: 'pointer',
                       bgcolor: isSelected
-                        ? 'linear-gradient(90deg, rgba(233,30,140,0.06) 0%, rgba(156,39,176,0.06) 100%)'
+                        ? 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.06) 0%, rgba(var(--color-secondary-rgb),0.06) 100%)'
                         : 'inherit',
                       background: isSelected
-                        ? 'linear-gradient(90deg, rgba(233,30,140,0.06) 0%, rgba(156,39,176,0.06) 100%)'
+                        ? 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.06) 0%, rgba(var(--color-secondary-rgb),0.06) 100%)'
                         : 'inherit',
                       transition: 'background 0.18s ease',
                       '&:hover': {
                         background: isSelected
-                          ? 'linear-gradient(90deg, rgba(233,30,140,0.1) 0%, rgba(156,39,176,0.1) 100%)'
-                          : 'linear-gradient(90deg, rgba(233,30,140,0.03) 0%, rgba(156,39,176,0.03) 100%)',
+                          ? 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.1) 0%, rgba(var(--color-secondary-rgb),0.1) 100%)'
+                          : 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.03) 0%, rgba(var(--color-secondary-rgb),0.03) 100%)',
                       },
                     }}
                   >
@@ -428,8 +428,8 @@ const QRStickerPage = () => {
                         size="small"
                         sx={{
                           fontSize: '0.68rem', fontWeight: 700, height: 22,
-                          bgcolor: alpha('#9C27B0', 0.08), color: '#6A1B9A',
-                          border: `1px solid ${alpha('#9C27B0', 0.22)}`,
+                          bgcolor: alpha(theme.palette.secondary.main, 0.08), color: 'secondary.dark',
+                          border: `1px solid ${alpha(theme.palette.secondary.main, 0.22)}`,
                         }}
                       />
                     </TableCell>
@@ -437,16 +437,16 @@ const QRStickerPage = () => {
                     <TableCell align="center">
                       <Typography sx={{
                         fontFamily: 'monospace', fontSize: '0.74rem',
-                        bgcolor: alpha('#E91E8C', 0.07),
+                        bgcolor: alpha(theme.palette.primary.main, 0.07),
                         px: 0.8, py: 0.3, borderRadius: 1,
-                        color: '#AD1457', fontWeight: 700, whiteSpace: 'nowrap',
+                        color: 'primary.dark', fontWeight: 700, whiteSpace: 'nowrap',
                       }}>
                         {barcodeCode}
                       </Typography>
                     </TableCell>
                     {/* MRP */}
                     <TableCell align="center">
-                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#E91E8C', whiteSpace: 'nowrap' }}>
+                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: 'primary.main', whiteSpace: 'nowrap' }}>
                         ₹{Number(product.mrp).toFixed(2)}
                       </Typography>
                     </TableCell>
@@ -502,12 +502,12 @@ const QRStickerPage = () => {
         maxWidth="sm"
         fullWidth
         TransitionProps={{ timeout: 350 }}
-        PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(233,30,140,0.28)' } }}
+        PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(var(--color-primary-rgb),0.28)' } }}
       >
         {/* Dialog Header */}
         <DialogTitle sx={{ p: 0 }}>
           <Box sx={{
-            background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
             color: '#fff', px: { xs: 2, sm: 3 }, py: 2.5,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             position: 'relative', overflow: 'hidden',
@@ -542,11 +542,11 @@ const QRStickerPage = () => {
                   {/* Product info row */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                     <Box sx={{ width: 36, height: 36, borderRadius: 2, flexShrink: 0, background: 'linear-gradient(135deg, #EDE9FE, #DDD6FE)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: '#6D28D9' }}>{idx + 1}</Typography>
+                      <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: 'secondary.dark' }}>{idx + 1}</Typography>
                     </Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography variant="body2" fontWeight={700} noWrap>{product.name}</Typography>
-                      <Typography variant="caption" sx={{ color: '#7C3AED', fontFamily: 'monospace', fontWeight: 600 }}>{barcodeCode}</Typography>
+                      <Typography variant="caption" sx={{ color: 'secondary.main', fontFamily: 'monospace', fontWeight: 600 }}>{barcodeCode}</Typography>
                     </Box>
                     <Chip label={`${qty} sticker${qty !== 1 ? 's' : ''}`} size="small" color="secondary" sx={{ fontWeight: 700, flexShrink: 0 }} />
                   </Box>
@@ -577,22 +577,22 @@ const QRStickerPage = () => {
           {/* Summary bar */}
           <Box sx={{
             px: 3, py: 2,
-            background: 'linear-gradient(135deg, rgba(233,30,140,0.06) 0%, rgba(156,39,176,0.06) 100%)',
-            borderTop: '1.5px solid rgba(233,30,140,0.12)',
+            background: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.06) 0%, rgba(var(--color-secondary-rgb),0.06) 100%)',
+            borderTop: '1.5px solid rgba(var(--color-primary-rgb),0.12)',
             display: 'flex', alignItems: 'center', gap: 3,
           }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }} display="block">Products</Typography>
-              <Typography sx={{ fontSize: '1.3rem', fontWeight: 800, color: '#AD1457', lineHeight: 1.2 }}>{selected.length}</Typography>
+              <Typography sx={{ fontSize: '1.3rem', fontWeight: 800, color: 'primary.dark', lineHeight: 1.2 }}>{selected.length}</Typography>
             </Box>
             <Divider orientation="vertical" flexItem />
             <Box sx={{ textAlign: 'center' }}>
               <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }} display="block">Total Stickers</Typography>
-              <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: '#E91E8C', lineHeight: 1.2 }}>{totalStickers}</Typography>
+              <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: 'primary.main', lineHeight: 1.2 }}>{totalStickers}</Typography>
             </Box>
             <Box sx={{ flex: 1, textAlign: 'right' }}>
               <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>Printed on</Typography>
-              <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#6A1B9A' }} display="block">
+              <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'secondary.dark' }} display="block">
                 {dayjs().format('DD MMM YYYY, hh:mm A')}
               </Typography>
             </Box>
@@ -606,8 +606,8 @@ const QRStickerPage = () => {
             onClick={() => setQtyDialogOpen(false)}
             sx={{
               flex: 1, py: 1.1, borderRadius: '10px',
-              borderColor: 'rgba(233,30,140,0.35)', color: '#E91E8C',
-              '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.04) },
+              borderColor: 'rgba(var(--color-primary-rgb),0.35)', color: 'primary.main',
+              '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.04) },
             }}
           >
             Cancel
@@ -618,8 +618,8 @@ const QRStickerPage = () => {
             onClick={() => { setQtyDialogOpen(false); setPreviewOpen(true); }}
             sx={{
               flex: 1, py: 1.1, borderRadius: '10px', fontWeight: 600,
-              borderColor: 'rgba(156,39,176,0.4)', color: '#9C27B0',
-              '&:hover': { bgcolor: alpha('#9C27B0', 0.05), borderColor: '#9C27B0' },
+              borderColor: 'rgba(var(--color-secondary-rgb),0.4)', color: 'secondary.main',
+              '&:hover': { bgcolor: alpha(theme.palette.secondary.main, 0.05), bordercolor: 'secondary.main' },
             }}
           >
             Preview
@@ -630,9 +630,9 @@ const QRStickerPage = () => {
             onClick={() => { setQtyDialogOpen(false); handlePrint(); }}
             sx={{
               flex: 2, py: 1.1, borderRadius: '10px', fontWeight: 700,
-              background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
-              boxShadow: '0 4px 15px rgba(233,30,140,0.35)',
-              '&:hover': { background: 'linear-gradient(135deg,#AD1457 0%,#6A1B9A 100%)', boxShadow: '0 6px 22px rgba(233,30,140,0.45)', transform: 'translateY(-1px)' },
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.35)',
+              '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`, boxShadow: '0 6px 22px rgba(var(--color-primary-rgb),0.45)', transform: 'translateY(-1px)' },
               transition: 'all 0.25s ease',
             }}
           >
@@ -647,10 +647,10 @@ const QRStickerPage = () => {
         onClose={() => setPreviewOpen(false)}
         maxWidth="sm" fullWidth scroll="paper"
         TransitionProps={{ timeout: 350 }}
-        PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(233,30,140,0.25)' } }}
+        PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(var(--color-primary-rgb),0.25)' } }}
       >
         <Box sx={{
-          background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
           px: { xs: 2, sm: 3 }, py: 2,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
@@ -675,7 +675,7 @@ const QRStickerPage = () => {
           <Button
             variant="outlined"
             onClick={() => setPreviewOpen(false)}
-            sx={{ flex: 1, borderRadius: '10px', borderColor: 'rgba(233,30,140,0.35)', color: '#E91E8C', '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.04) } }}
+            sx={{ flex: 1, borderRadius: '10px', borderColor: 'rgba(var(--color-primary-rgb),0.35)', color: 'primary.main', '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.04) } }}
           >
             Close
           </Button>
@@ -685,9 +685,9 @@ const QRStickerPage = () => {
             onClick={() => { setPreviewOpen(false); handlePrint(); }}
             sx={{
               flex: 2, borderRadius: '10px', fontWeight: 700,
-              background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
-              boxShadow: '0 4px 15px rgba(233,30,140,0.35)',
-              '&:hover': { background: 'linear-gradient(135deg,#AD1457 0%,#6A1B9A 100%)', transform: 'translateY(-1px)' },
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.35)',
+              '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`, transform: 'translateY(-1px)' },
               transition: 'all 0.25s ease',
             }}
           >

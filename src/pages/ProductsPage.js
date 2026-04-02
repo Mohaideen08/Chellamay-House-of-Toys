@@ -290,9 +290,9 @@ const ProductsPage = () => {
   const fieldSx = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '10px',
-      '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+      '&.Mui-focused fieldset': { bordercolor: 'primary.main' },
     },
-    '& .MuiInputLabel-root.Mui-focused': { color: '#E91E8C' },
+    '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
   };
 
   const columns = [
@@ -305,7 +305,7 @@ const ProductsPage = () => {
     {
       field: 'item_code', headerName: 'Item Code', flex: 0.8, minWidth: 100, headerAlign: 'center', align: 'center',
       renderCell: (p) => (
-        <Typography sx={{ fontSize: '0.78rem', fontFamily: 'monospace', fontWeight: 700, color: '#6A1B9A' }}>{p.value || '—'}</Typography>
+        <Typography sx={{ fontSize: '0.78rem', fontFamily: 'monospace', fontWeight: 700, color: 'secondary.dark' }}>{p.value || '—'}</Typography>
       ),
     },
     {
@@ -329,7 +329,7 @@ const ProductsPage = () => {
     {
       field: 'final_price', headerName: 'Final Price', flex: 0.6, minWidth: 100, headerAlign: 'center', align: 'center',
       renderCell: (p) => p.value != null
-        ? <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#E91E8C' }}>₹{Number(p.value).toFixed(2)}</Typography>
+        ? <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: 'primary.main' }}>₹{Number(p.value).toFixed(2)}</Typography>
         : <Typography sx={{ fontSize: '0.78rem', color: 'text.disabled' }}>—</Typography>,
     },
 
@@ -366,7 +366,7 @@ const ProductsPage = () => {
         <Chip
           label={dayjs(p.value).format('DD MMM YY hh:mm A')}
           size="small"
-          sx={{ fontSize: '0.7rem', fontWeight: 600, bgcolor: alpha('#9C27B0', 0.08), color: '#6A1B9A' }}
+          sx={{ fontSize: '0.7rem', fontWeight: 600, bgcolor: alpha(theme.palette.secondary.main, 0.08), color: 'secondary.dark' }}
         />
       ) : <Typography variant="caption" color="text.disabled">—</Typography>,
     },
@@ -392,8 +392,8 @@ const ProductsPage = () => {
               size="small"
               onClick={() => openEdit(p.row)}
               sx={{
-                bgcolor: alpha('#E91E8C', 0.08), color: '#E91E8C',
-                '&:hover': { bgcolor: alpha('#E91E8C', 0.18), transform: 'scale(1.12)' },
+                bgcolor: alpha(theme.palette.primary.main, 0.08), color: 'primary.main',
+                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.18), transform: 'scale(1.12)' },
                 transition: 'all 0.2s ease',
               }}
             >
@@ -405,8 +405,8 @@ const ProductsPage = () => {
               size="small"
               onClick={() => { setRestockTarget(p.row); setRestockQty(''); setRestockNotes(''); setRestockError(''); setRestockBranchId(branches.find((b) => b.name.toLowerCase() === profile?.branchName?.toLowerCase())?.id?.toString() ?? ''); }}
               sx={{
-                bgcolor: alpha('#9C27B0', 0.08), color: '#9C27B0',
-                '&:hover': { bgcolor: alpha('#9C27B0', 0.18), transform: 'scale(1.12)' },
+                bgcolor: alpha(theme.palette.secondary.main, 0.08), color: 'secondary.main',
+                '&:hover': { bgcolor: alpha(theme.palette.secondary.main, 0.18), transform: 'scale(1.12)' },
                 transition: 'all 0.2s ease',
               }}
             >
@@ -442,10 +442,10 @@ const ProductsPage = () => {
           ...fadeInUp(0),
           mb: 2.5,
           borderRadius: '8px',
-          background: 'linear-gradient(135deg, #E91E8C 0%, #9C27B0 60%, #6A1B9A 100%)',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 60%, ${theme.palette.secondary.dark} 100%)`,
           px: { xs: 2, sm: 2.5 }, py: 1.4,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          boxShadow: '0 4px 18px rgba(233,30,140,0.32)',
+          boxShadow: '0 4px 18px rgba(var(--color-primary-rgb),0.32)',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -486,7 +486,7 @@ const ProductsPage = () => {
           p: { xs: 1.5, sm: 2 },
           borderRadius: '8px',
           border: '1.5px solid',
-          borderColor: 'rgba(233,30,140,0.13)',
+          borderColor: 'rgba(var(--color-primary-rgb),0.13)',
           background: '#fff',
           display: 'flex',
           alignItems: 'center',
@@ -503,23 +503,23 @@ const ProductsPage = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: '#E91E8C', fontSize: 18 }} />
+                <SearchRoundedIcon sx={{ color: 'primary.main', fontSize: 18 }} />
               </InputAdornment>
             ),
             sx: {
               borderRadius: '10px',
-              bgcolor: alpha('#E91E8C', 0.04),
+              bgcolor: alpha(theme.palette.primary.main, 0.04),
               '& input': { fontSize: '0.8rem' },
               '& input::placeholder': { fontSize: '0.77rem', opacity: 0.7 },
-              '&.Mui-focused': { bgcolor: '#fff', boxShadow: '0 0 0 3px rgba(233,30,140,0.12)' },
+              '&.Mui-focused': { bgcolor: '#fff', boxShadow: '0 0 0 3px rgba(var(--color-primary-rgb),0.12)' },
             },
           }}
           sx={{
             flex: 1,
             '& .MuiOutlinedInput-root': {
-              '& fieldset': { borderColor: 'rgba(233,30,140,0.22)' },
-              '&:hover fieldset': { borderColor: 'rgba(233,30,140,0.45)' },
-              '&.Mui-focused fieldset': { borderColor: '#E91E8C' },
+              '& fieldset': { borderColor: 'rgba(var(--color-primary-rgb),0.22)' },
+              '&:hover fieldset': { borderColor: 'rgba(var(--color-primary-rgb),0.45)' },
+              '&.Mui-focused fieldset': { bordercolor: 'primary.main' },
             },
           }}
         />
@@ -537,11 +537,11 @@ const ProductsPage = () => {
             px: { xs: 2, sm: 2.5 }, py: 1,
             fontSize: '0.85rem',
             borderRadius: 2.5,
-            background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
-            boxShadow: '0 4px 15px rgba(233,30,140,0.4)',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+            boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.4)',
             '&:hover': {
-              background: 'linear-gradient(135deg,#AD1457 0%,#6A1B9A 100%)',
-              boxShadow: '0 6px 22px rgba(233,30,140,0.5)',
+              background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+              boxShadow: '0 6px 22px rgba(var(--color-primary-rgb),0.5)',
               transform: 'translateY(-2px)',
             },
             transition: 'all 0.25s ease',
@@ -559,7 +559,7 @@ const ProductsPage = () => {
           ...fadeInUp(0.2),
           borderRadius: '8px',
           border: '1.5px solid',
-          borderColor: 'rgba(233,30,140,0.1)',
+          borderColor: 'rgba(var(--color-primary-rgb),0.1)',
           overflow: 'auto',
         }}
       >
@@ -572,17 +572,17 @@ const ProductsPage = () => {
             minWidth: 700,
             fontFamily: '"Poppins", sans-serif',
             '& .MuiDataGrid-columnHeaders': {
-              background: 'linear-gradient(135deg, rgba(233,30,140,0.09) 0%, rgba(156,39,176,0.09) 100%)',
-              borderBottom: '2px solid rgba(233,30,140,0.15)',
+              background: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.09) 0%, rgba(var(--color-secondary-rgb),0.09) 100%)',
+              borderBottom: '2px solid rgba(var(--color-primary-rgb),0.15)',
               '& .MuiDataGrid-columnHeaderTitle': {
                 fontWeight: 700, fontSize: '0.78rem',
-                color: '#AD1457', letterSpacing: '0.05em', textTransform: 'uppercase',
+                color: 'primary.dark', letterSpacing: '0.05em', textTransform: 'uppercase',
               },
             },
             '& .MuiDataGrid-row': {
               transition: 'background 0.2s ease',
               '&:hover': {
-                background: 'linear-gradient(90deg, rgba(233,30,140,0.04) 0%, rgba(156,39,176,0.04) 100%)',
+                background: 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.04) 0%, rgba(var(--color-secondary-rgb),0.04) 100%)',
               },
             },
             '& .MuiDataGrid-cell': {
@@ -590,8 +590,8 @@ const ProductsPage = () => {
               '&:focus, &:focus-within': { outline: 'none' },
             },
             '& .MuiDataGrid-footerContainer': {
-              borderTop: '1px solid rgba(233,30,140,0.12)',
-              bgcolor: 'rgba(233,30,140,0.02)',
+              borderTop: '1px solid rgba(var(--color-primary-rgb),0.12)',
+              bgcolor: 'rgba(var(--color-primary-rgb),0.02)',
             },
             '& .MuiTablePagination-root': { fontSize: '0.8rem' },
           }}
@@ -610,13 +610,13 @@ const ProductsPage = () => {
           sx: {
             borderRadius: '10px',
             overflow: 'hidden',
-            boxShadow: '0 24px 64px rgba(233,30,140,0.28)',
+            boxShadow: '0 24px 64px rgba(var(--color-primary-rgb),0.28)',
           },
         }}
       >
         {/* Dialog Header */}
         <Box sx={{
-          background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
           px: { xs: 2, sm: 3 }, py: 2.5,
           display: 'flex', alignItems: 'center', gap: 2,
           position: 'relative', overflow: 'hidden',
@@ -692,7 +692,7 @@ const ProductsPage = () => {
                         <InputAdornment position="end">
                           <Tooltip title="Generate new barcode">
                             <IconButton size="small" onClick={() => setField('barcode', generateBarcode(rows.length + 1))}>
-                              <RefreshRoundedIcon fontSize="small" sx={{ color: '#E91E8C' }} />
+                              <RefreshRoundedIcon fontSize="small" sx={{ color: 'primary.main' }} />
                             </IconButton>
                           </Tooltip>
                         </InputAdornment>
@@ -706,13 +706,13 @@ const ProductsPage = () => {
                 {/* Branch-wise Quantity – dynamic rows */}
                 <Box>
                   <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#9C27B0' }}>
+                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'secondary.main' }}>
                       {editRow ? 'Branch-wise Stock Quantity' : 'Opening Qty per Branch'}
                     </Typography>
                     <Chip
                       label={`Total: ${branchQtys.reduce((s, r) => s + (parseInt(r.qty) || 0), 0)} units`}
                       size="small"
-                      sx={{ fontWeight: 700, fontSize: '0.72rem', bgcolor: alpha('#9C27B0', 0.1), color: '#6A1B9A' }}
+                      sx={{ fontWeight: 700, fontSize: '0.72rem', bgcolor: alpha(theme.palette.secondary.main, 0.1), color: 'secondary.dark' }}
                     />
                   </Stack>
                   <Stack spacing={1.2}>
@@ -767,7 +767,7 @@ const ProductsPage = () => {
                       size="small"
                       startIcon={<AddRoundedIcon />}
                       onClick={() => setBranchQtys((prev) => [...prev, { branchId: '', qty: '' }])}
-                      sx={{ mt: 1.2, color: '#9C27B0', fontWeight: 700, fontSize: '0.78rem', textTransform: 'none', px: 1 }}
+                      sx={{ mt: 1.2, color: 'secondary.main', fontWeight: 700, fontSize: '0.78rem', textTransform: 'none', px: 1 }}
                     >
                       Add another branch
                     </Button>
@@ -868,15 +868,15 @@ const ProductsPage = () => {
             </Paper>
 
             {/* Section: Assignment */}
-            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'rgba(156,39,176,0.18)' }}>
+            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'rgba(var(--color-secondary-rgb),0.18)' }}>
               <Box sx={{
                 px: 2.5, py: 1.4, bgcolor: '#FAF5FF',
                 display: 'flex', alignItems: 'center', gap: 1,
-                borderBottom: '1px solid rgba(156,39,176,0.15)',
+                borderBottom: '1px solid rgba(var(--color-secondary-rgb),0.15)',
                 borderRadius: '12px 12px 0 0',
               }}>
-                <GroupWorkRoundedIcon sx={{ color: '#9C27B0', fontSize: 18 }} />
-                <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#9C27B0' }}>Assignment</Typography>
+                <GroupWorkRoundedIcon sx={{ color: 'secondary.main', fontSize: 18 }} />
+                <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'secondary.main' }}>Assignment</Typography>
               </Box>
               <Box sx={{ p: 2.5 }}>
                 <TextField select label="Dealer" fullWidth value={form.dealer_id}
@@ -896,8 +896,8 @@ const ProductsPage = () => {
             onClick={() => setDialogOpen(false)}
             sx={{
               flex: 1, py: 1.2, borderRadius: 2.5,
-              borderColor: 'rgba(233,30,140,0.35)', color: '#E91E8C',
-              '&:hover': { borderColor: '#E91E8C', bgcolor: alpha('#E91E8C', 0.04) },
+              borderColor: 'rgba(var(--color-primary-rgb),0.35)', color: 'primary.main',
+              '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.04) },
             }}
           >
             Cancel
@@ -906,14 +906,14 @@ const ProductsPage = () => {
             variant="contained" onClick={handleSave} disabled={saving}
             sx={{
               flex: 1, py: 1.2, borderRadius: 2.5,
-              background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)',
-              boxShadow: '0 4px 15px rgba(233,30,140,0.35)',
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.35)',
               '&:hover': {
-                background: 'linear-gradient(135deg,#AD1457 0%,#6A1B9A 100%)',
-                boxShadow: '0 6px 22px rgba(233,30,140,0.45)',
+                background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+                boxShadow: '0 6px 22px rgba(var(--color-primary-rgb),0.45)',
                 transform: 'translateY(-1px)',
               },
-              '&.Mui-disabled': { opacity: 0.65, background: 'linear-gradient(135deg,#E91E8C 0%,#9C27B0 100%)' },
+              '&.Mui-disabled': { opacity: 0.65, background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`},
               transition: 'all 0.25s ease',
             }}
           >
@@ -956,7 +956,7 @@ const ProductsPage = () => {
           </IconButton>
         </Box>
         <DialogContent sx={{ p: 2.5, bgcolor: '#FAFBFF' }}>
-          <Typography variant="body2" fontWeight={700} sx={{ mb: 0.5, color: '#6A1B9A' }}>
+          <Typography variant="body2" fontWeight={700} sx={{ mb: 0.5, color: 'secondary.dark' }}>
             {restockTarget?.name}
           </Typography>
           {restockBranchId && (
@@ -1007,9 +1007,9 @@ const ProductsPage = () => {
               sx={{ ...fieldSx, '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' } }}
             />
             {restockBranchId && restockQty && parseInt(restockQty) > 0 && (
-              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: alpha('#9C27B0', 0.06), border: '1px solid', borderColor: alpha('#9C27B0', 0.18) }}>
+              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: alpha(theme.palette.secondary.main, 0.06), border: '1px solid', borderColor: alpha(theme.palette.secondary.main, 0.18) }}>
                 <Typography variant="caption" color="text.secondary">After restock ({branches.find((b) => b.id === parseInt(restockBranchId))?.name ?? ''}):</Typography>
-                <Typography variant="body2" fontWeight={800} sx={{ color: '#6A1B9A' }}>
+                <Typography variant="body2" fontWeight={800} sx={{ color: 'secondary.dark' }}>
                   {((restockTarget?.branch_quantities ?? {})[restockBranchId.toString()] ?? 0) + (parseInt(restockQty) || 0)} units
                 </Typography>
               </Box>
@@ -1020,7 +1020,7 @@ const ProductsPage = () => {
           <Button
             variant="outlined"
             onClick={() => { setRestockTarget(null); setRestockBranchId(''); }}
-            sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha('#9C27B0', 0.5), color: '#9C27B0', '&:hover': { borderColor: '#9C27B0', bgcolor: alpha('#9C27B0', 0.05) } }}
+            sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha(theme.palette.secondary.main, 0.5), color: 'secondary.main', '&:hover': { bordercolor: 'secondary.main', bgcolor: alpha(theme.palette.secondary.main, 0.05) } }}
           >
             Cancel
           </Button>
