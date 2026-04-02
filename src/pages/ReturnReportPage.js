@@ -167,9 +167,10 @@ const ReturnReportPage = () => {
 
   const handleRepairRestock = async () => {
     if (!repairBranchId) { setRepairError('Select a branch'); return; }
-    if (!repairQty || Number(repairQty) < 1) { setRepairError('Enter a valid quantity'); return; }
     setRepairSaving(true);
     setRepairError('');
+
+    const qty = repairRestockTarget.quantity ?? 1;
 
     const { data: prod, error: fetchErr } = await supabase
       .from('products')
@@ -181,7 +182,7 @@ const ReturnReportPage = () => {
 
     const bq = { ...(prod.branch_quantities ?? {}) };
     const key = repairBranchId.toString();
-    bq[key] = (Number(bq[key] ?? 0)) + Number(repairQty);
+    bq[key] = (Number(bq[key] ?? 0)) + qty;
     const newTotal = Object.values(bq).reduce((s, v) => s + Number(v), 0);
 
     const { error: updateErr } = await supabase
@@ -199,7 +200,6 @@ const ReturnReportPage = () => {
     showSnackbar('Stock restored for repaired product');
     setRepairRestockTarget(null);
     setRepairBranchId('');
-    setRepairQty('');
     fetchData();
     setRepairSaving(false);
   };
@@ -255,7 +255,12 @@ const ReturnReportPage = () => {
                 size="small"
                 disabled={!!p.row.restocked}
                 sx={{ color: p.row.restocked ? 'text.disabled' : '#22C55E' }}
-                onClick={() => { setRepairRestockTarget(p.row); setRepairBranchId(''); setRepairQty(''); setRepairError(''); }}
+                onClick={() => {
+                  setRepairRestockTarget(p.row);
+                  const defaultBranch = branches.find((b) => b.name === profile?.branchName);
+                  setRepairBranchId(defaultBranch ? defaultBranch.id : '');
+                  setRepairError('');
+                }}
               >
                 <BuildRoundedIcon fontSize="small" />
               </IconButton>
@@ -704,16 +709,6 @@ const ReturnReportPage = () => {
                   ))}
                 </Select>
               </FormControl>
-              <TextField
-                label="Quantity to Restock *"
-                type="number"
-                fullWidth
-                size="small"
-                value={repairQty}
-                onChange={(e) => setRepairQty(e.target.value)}
-                inputProps={{ min: 1 }}
-                sx={fieldSx}
-              />
               {repairError && (
                 <Typography color="error" variant="caption">{repairError}</Typography>
               )}

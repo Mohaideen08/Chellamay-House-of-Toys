@@ -12,32 +12,60 @@ import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import CloseRounded from '@mui/icons-material/CloseRounded';
-import Barcode from 'react-barcode';
+import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../services/supabase';
 import { useSnackbar } from '../context/SnackbarContext';
 import dayjs from 'dayjs';
 
 // ─── Sticker Print Template (inline styles – works in print window) ──────────
 const StickerPreview = ({ items }) => {
+  const now = dayjs().format('DD/MM/YY');
   return (
-    <div style={{ padding: 8 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+    <div style={{ padding: 14, background: '#e0e0e0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {items.flatMap((item) =>
           Array.from({ length: item.qty }, (_, i) => {
             const code = item.product.barcode || item.product.item_code || String(item.product.id);
             return (
               <div
                 key={`${item.product.id}-${i}`}
-                style={{ border: '1px dashed #ccc', borderRadius: 4, padding: 6, textAlign: 'center', backgroundColor: '#fff', pageBreakInside: 'avoid' }}
+                style={{
+                  width: '100%',
+                  aspectRatio: '50/30',
+                  border: '1px solid #ccc',
+                  borderRadius: 5,
+                  backgroundColor: '#fff',
+                  fontFamily: 'Arial, sans-serif',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: '4px 5px',
+                  boxSizing: 'border-box',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+                }}
               >
-                <div style={{ fontSize: 8, fontWeight: 700, lineHeight: 1.3, marginBottom: 2, color: '#111', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  {item.product.name}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <Barcode value={code} width={1.2} height={40} fontSize={8} margin={0} displayValue background="#fff" lineColor="#000" />
-                </div>
-                <div style={{ fontSize: 9, fontWeight: 800, color: '#E91E8C', marginTop: 2 }}>
-                  MRP: ₹{Number(item.product.mrp).toFixed(2)}
+                {/* Body: QR left | info right */}
+                <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 5 }}>
+
+                  {/* Shop name above QR Code */}
+                  <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: '#111', letterSpacing: 0.3, marginBottom: 2 }}>செல்லமே</div>
+                    <QRCodeSVG value={code} size={40} level="M" />
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1 }}>
+                    <div style={{ fontSize: 6, color: '#444', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {item.product.name}
+                    </div>
+                    <div style={{ fontSize: 10, fontWeight: 900, color: '#000', letterSpacing: 0.2 }}>
+                      MRP. {Number(item.product.mrp).toFixed(2)}
+                    </div>
+                    <div style={{ fontSize: 7, color: '#333', fontFamily: 'monospace', fontWeight: 600 }}>
+                      *{code}*
+                    </div>
+                    <div style={{ fontSize: 5.5, color: '#888', marginTop: 1 }}>{now}</div>
+                  </div>
                 </div>
               </div>
             );
@@ -75,15 +103,25 @@ const QRStickerPage = () => {
     const win = window.open('', '_blank', 'width=900,height=700');
     if (!win) { showSnackbar('Pop-up blocked – allow pop-ups and try again', 'warning'); return; }
     const itemsSnap = selectedItemsRef.current;
-    const html = itemsSnap.flatMap((item) =>
+    const now = dayjs().format('DD/MM/YY');
+    const stickers = itemsSnap.flatMap((item) =>
       Array.from({ length: item.qty }, (_, i) => {
-        const svgEl = document.querySelector(`[data-barcode-id="${item.product.id}-${i}"]`);
-        const svgHtml = svgEl ? svgEl.outerHTML : '';
-        return `<div class="sticker"><div class="name">${item.product.name}</div>${svgHtml}<div class="price">MRP: &#8377;${Number(item.product.mrp).toFixed(2)}</div></div>`;
+        const code = item.product.barcode || item.product.item_code || String(item.product.id);
+        const qrEl = document.querySelector(`[data-qr-id="${item.product.id}-${i}"] svg`);
+        const qrHtml = qrEl ? qrEl.outerHTML : '';
+        const pname = `<div class="pname">${item.product.name}</div>`;
+        return `<div class="sticker"><div class="body"><div class="qr"><div class="shop">\u0b9a\u0bc6\u0bb2\u0bcd\u0bb2\u0bae\u0bc7</div>${qrHtml}</div><div class="info">${pname}<div class="price">MRP. ${Number(item.product.mrp).toFixed(2)}</div><div class="code">*${code}*</div><div class="dt">${now}</div></div></div></div>`;
       })
-    ).join('');
-    const styles = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:sans-serif;padding:8px;background:#fff}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.sticker{border:1px dashed #ccc;border-radius:4px;padding:6px;text-align:center;page-break-inside:avoid;background:#fff}.name{font-size:8px;font-weight:700;line-height:1.3;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#111}.price{font-size:9px;font-weight:800;color:#E91E8C;margin-top:2px}svg{max-width:100%}@page{margin:0.5cm}`;
-    win.document.write('<!DOCTYPE html><html><head><title>Chellamay Toys Barcode Stickers</title><style>' + styles + '</style></head><body><div class="grid">' + html + '</div></body></html>');
+    );
+    // Group 3 stickers per page for LP 46 Lite
+    const pages = [];
+    for (let g = 0; g < stickers.length; g += 3) {
+      pages.push(`<div class="page">${stickers.slice(g, g + 3).join('')}</div>`);
+    }
+    const html = pages.join('');
+    // LP 46 Lite: 50mm x 90mm (3 stickers per label)
+    const styles = `@page{size:50mm 90mm;margin:0}*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#fff}.page{width:50mm;height:90mm;display:flex;flex-direction:column;page-break-after:always}.sticker{width:50mm;height:30mm;overflow:hidden;display:flex;flex-direction:column;padding:3pt 4pt;background:#fff}.body{display:flex;align-items:center;flex:1;gap:4pt}.qr{flex-shrink:0;display:flex;flex-direction:column;align-items:center}.shop{font-size:6pt;font-weight:700;color:#111;letter-spacing:0.3px;margin-bottom:1.5pt;text-align:center}.qr svg{width:22mm;height:22mm}.info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:1pt}.pname{font-size:5pt;color:#444;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.price{font-size:9.5pt;font-weight:900;color:#000}.code{font-size:6pt;font-weight:600;color:#333;font-family:monospace}.dt{font-size:4.5pt;color:#888;margin-top:1pt}`;
+    win.document.write('<!DOCTYPE html><html><head><title>Chellamay Toys Barcode Stickers</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
     win.document.close();
     win.focus();
     setTimeout(() => { win.print(); win.close(); }, 600);
@@ -449,8 +487,8 @@ const QRStickerPage = () => {
           Array.from({ length: item.qty }, (_, i) => {
             const code = item.product.barcode || item.product.item_code || String(item.product.id);
             return (
-              <span key={`${item.product.id}-${i}`} data-barcode-id={`${item.product.id}-${i}`}>
-                <Barcode value={code} width={1.2} height={40} fontSize={8} margin={0} displayValue background="#fff" lineColor="#000" />
+              <span key={`${item.product.id}-${i}`} data-qr-id={`${item.product.id}-${i}`}>
+                <QRCodeSVG value={code} size={84} level="M" />
               </span>
             );
           })
@@ -607,7 +645,7 @@ const QRStickerPage = () => {
       <Dialog
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        maxWidth="md" fullWidth scroll="paper"
+        maxWidth="sm" fullWidth scroll="paper"
         TransitionProps={{ timeout: 350 }}
         PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden', boxShadow: '0 24px 64px rgba(233,30,140,0.25)' } }}
       >

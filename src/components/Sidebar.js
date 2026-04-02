@@ -13,6 +13,8 @@ import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded';
 import AssignmentReturnRoundedIcon from '@mui/icons-material/AssignmentReturnRounded';
 import SystemUpdateAltRoundedIcon from '@mui/icons-material/SystemUpdateAltRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 
 export const DRAWER_WIDTH = 190;
 
@@ -20,6 +22,8 @@ const BRANCH_MENU = [
   { label: 'Dashboard', path: '/dashboard', icon: DashboardRoundedIcon },
   { divider: true, label: 'Operations' },
   { label: 'Products', path: '/products', icon: Inventory2RoundedIcon },
+  { label: 'Categories', path: '/categories', icon: CategoryRoundedIcon },
+  { label: 'Dealers', path: '/dealers', icon: PeopleAltRoundedIcon },
   { label: 'Sticker Printer', path: '/qr-stickers', icon: QrCodeScannerRoundedIcon },
   { label: 'Billing', path: '/billing', icon: ReceiptRoundedIcon },
   { divider: true, label: 'Reports' },
