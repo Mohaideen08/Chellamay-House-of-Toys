@@ -105,7 +105,7 @@ const Header = ({ onMenuClick }) => {
             </Avatar>
             <Box>
               <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '0.92rem', lineHeight: 1.2 }} noWrap>
-                {profile?.username || 'User'}
+                {profile?.username ? profile.username.charAt(0).toUpperCase() + profile.username.slice(1) : 'User'}
               </Typography>
               <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.72rem', textTransform: 'capitalize' }}>
                 {profile?.role || 'staff'}
