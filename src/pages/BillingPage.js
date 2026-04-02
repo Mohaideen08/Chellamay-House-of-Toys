@@ -50,7 +50,7 @@ const ThermalBillPreview = ({ billItems, billNumber, billDate, discount, total, 
       <Box sx={{ textAlign: 'center' }}>
         <Typography sx={{ fontFamily: 'inherit', fontWeight: 'bold', fontSize: '14px' }}>CHELLAMAY HOUSE OF TOYS</Typography>
         <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>27 AMMAN SANNATHI,</Typography>
-        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>PAVOORCHATHRAM, TENKASI-627811</Typography>
+        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>TENKASI-627811</Typography>
         <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>Ph: 8883509501/8680086899</Typography>
         <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>GSTIN: 33BQNPP8756L1ZY</Typography>
       </Box>
@@ -187,7 +187,7 @@ const BillingPage = () => {
       + '@page { margin: 0.3cm; size: 80mm auto; }';
     const html = '<div class="receipt">'
       + '<div class="c b" style="font-size:14px">CHELLAMAY HOUSE OF TOYS</div>'
-      + '<div class="c">27 AMMAN SANNATHI, PAVOORCHATHRAM</div>'
+      + '<div class="c">27 AMMAN SANNATHI,</div>'
       + '<div class="c">TENKASI - 627811</div>'
       + '<div class="c">Ph: 8883509501 / 8680086899</div>'
       + '<div class="c">GSTIN: 33BQNPP8756L1ZY</div>'
