@@ -27,14 +27,14 @@ const fadeInUp = (delay = 0) => ({
   animation: `fadeInUp 0.5s ease ${delay}s both`,
 });
 
-const generateBillNumber = async () => {
+const generateBillNumber = async (extraOffset = 0) => {
   const today = dayjs();
   const { count } = await supabase
     .from('sales')
     .select('*', { count: 'exact', head: true })
     .gte('created_at', today.startOf('day').toISOString())
     .lte('created_at', today.endOf('day').toISOString());
-  const seq = String((count ?? 0) + 1).padStart(4, '0');
+  const seq = String((count ?? 0) + 1 + extraOffset).padStart(4, '0');
   return `BILL-${today.format('YYYYMMDD')}-${seq}`;
 };
 
@@ -46,7 +46,7 @@ const ThermalBillPreview = ({ billItems, billNumber, billDate, discount, total, 
   const mono = '"Courier New", Courier, monospace';
   const Dash = () => <Box sx={{ borderTop: '1px dashed #000', my: '4px' }} />;
   return (
-    <Box sx={{ fontFamily: mono, fontSize: '12px', maxWidth: 320, mx: 'auto', p: 2, bgcolor: '#fff', color: '#000' }}>
+    <Box sx={{ fontFamily: mono, fontSize: '12px', maxWidth: 320, mx: 'auto', p: 2, bgcolor: '#fff', color: '#000', '& *': { color: '#000 !important' } }}>
       <Box sx={{ textAlign: 'center' }}>
         <Typography sx={{ fontFamily: 'inherit', fontWeight: 'bold', fontSize: '14px' }}>CHELLAMAY HOUSE OF TOYS</Typography>
         <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>27 AMMAN SANNATHI,</Typography>
@@ -125,6 +125,18 @@ const ThermalBillPreview = ({ billItems, billNumber, billDate, discount, total, 
   );
 };
 
+const EMPTY_BILL = (label, billNumber = '') => ({
+  id: Date.now() + Math.random(),
+  label,
+  billItems: [],
+  billNumber,
+  customerName: '',
+  customerPhone: '',
+  billDiscount: 0,
+  gstPercent: '',
+  saved: false,
+});
+
 const BillingPage = () => {
   const { showSnackbar } = useSnackbar();
   const theme = useTheme();
@@ -133,26 +145,94 @@ const BillingPage = () => {
   const [products, setProducts] = useState([]);
   const [userBranchId, setUserBranchId] = useState(null);
   const [userBranchName, setUserBranchName] = useState('');
-  const [billItems, setBillItems] = useState([]);
-  const [billNumber, setBillNumber] = useState('');
+
+  // ── Multi-bill tabs persisted in localStorage ────────────────────
+  const [bills, setBills] = useState(() => {
+    try {
+      const raw = localStorage.getItem('billing_tabs');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return [EMPTY_BILL('Bill 1')];
+  });
+  const [activeTab, setActiveTab] = useState(() => {
+    try { const v = Number(localStorage.getItem('billing_active_tab')); return isNaN(v) ? 0 : v; } catch { return 0; }
+  });
+
+  useEffect(() => { try { localStorage.setItem('billing_tabs', JSON.stringify(bills)); } catch {} }, [bills]);
+  useEffect(() => { try { localStorage.setItem('billing_active_tab', String(activeTab)); } catch {} }, [activeTab]);
+
+  const safeTab = Math.min(Math.max(0, activeTab), bills.length - 1);
+  const activeBill = bills[safeTab] ?? bills[0];
+  const { billItems, billNumber, customerName, customerPhone, billDiscount, gstPercent, saved } = activeBill;
+
+  const updateBill = useCallback((patch) => {
+    setBills(prev => prev.map((b, i) => i === safeTab ? { ...b, ...patch } : b));
+  }, [safeTab]);
+
+  const updateBillItems = useCallback((updater) => {
+    setBills(prev => prev.map((b, i) =>
+      i === safeTab ? { ...b, billItems: typeof updater === 'function' ? updater(b.billItems) : updater } : b
+    ));
+  }, [safeTab]);
+
+  const addTab = () => {
+    // count unsaved tabs to avoid duplicate bill numbers
+    const unsavedCount = bills.filter(b => !b.saved).length;
+    generateBillNumber(unsavedCount).then(bn => {
+      setBills(prev => {
+        const newBill = EMPTY_BILL(`Bill ${prev.length + 1}`, bn);
+        setActiveTab(prev.length);
+        return [...prev, newBill];
+      });
+    });
+  };
+
+  const closeTab = (idx, e) => {
+    e.stopPropagation();
+    if (bills.length === 1) return;
+    setBills(prev => {
+      const next = prev.filter((_, i) => i !== idx);
+      try { localStorage.setItem('billing_tabs', JSON.stringify(next)); } catch {}
+      return next;
+    });
+    setActiveTab(prev => {
+      const next = prev > idx ? prev - 1 : prev === idx ? Math.max(0, idx - 1) : prev;
+      try { localStorage.setItem('billing_active_tab', String(next)); } catch {}
+      return next;
+    });
+  };
+  // ─────────────────────────────────────────────────────────────────
+
+  // Transient UI state (not persisted)
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [itemQty, setItemQty] = useState(1);
   const [itemDiscount, setItemDiscount] = useState(0);
-  const [billDiscount, setBillDiscount] = useState(0);
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [scanInput, setScanInput] = useState('');
   const [scanResult, setScanResult] = useState(null); // { type: 'success'|'error', message }
-  const [editingDiscountIdx, setEditingDiscountIdx] = useState(null);
-  const [editingDiscountVal, setEditingDiscountVal] = useState('');
-  const [gstPercent, setGstPercent] = useState('');
+  const [editingTotalIdx, setEditingTotalIdx] = useState(null);
+  const [editingTotalVal, setEditingTotalVal] = useState('');
+  const [editingQtyIdx, setEditingQtyIdx] = useState(null);
+  const [editingQtyVal, setEditingQtyVal] = useState('');
   const scanInputRef = useRef(null);
   const barcodeBuffer = useRef('');
   const barcodeTimeout = useRef(null);
+
+  // Reset transient editing state when switching tabs
+  useEffect(() => {
+    setEditingTotalIdx(null);
+    setEditingQtyIdx(null);
+    setScanInput('');
+    setScanResult(null);
+    if (!activeBill.billNumber) {
+      generateBillNumber().then(bn => updateBill({ billNumber: bn }));
+    }
+  }, [safeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePrint = useCallback(() => {
     const win = window.open('', '_blank', 'width=420,height=700');
@@ -181,8 +261,9 @@ const BillingPage = () => {
         + '</tr>';
     }).join('');
     const styles = '* { box-sizing: border-box; margin: 0; padding: 0; }'
-      + 'body { font-family: "Courier New", Courier, monospace; font-size: 11px; background: #fff; color: #000; }'
-      + '.receipt { max-width: 320px; margin: auto; padding: 8px 4px; }'
+      + 'body { font-family: "Courier New", Courier, monospace; font-size: 11px; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }'
+      + '.receipt { max-width: 320px; margin: auto; padding: 8px 4px; color: #000; }'
+      + '* { color: #000 !important; }'
       + '.c { text-align: center; } .b { font-weight: bold; }'
       + 'table { width: 100%; border-collapse: collapse; }'
       + '@page { margin: 0.3cm; size: 80mm auto; }';
@@ -265,7 +346,6 @@ const BillingPage = () => {
         if (br) { branchId = br.id; setUserBranchId(br.id); setUserBranchName(br.name); }
       }
       await fetchProducts(branchId);
-      generateBillNumber().then(setBillNumber);
     };
     init();
   }, [profile, fetchProducts]);
@@ -296,7 +376,7 @@ const BillingPage = () => {
       setTimeout(() => setScanResult(null), 3000);
       return;
     }
-    setBillItems((prev) => {
+    updateBillItems((prev) => {
       const idx = prev.findIndex((i) => i.product.id === found.id);
       if (idx >= 0) {
         const updated = [...prev];
@@ -322,7 +402,7 @@ const BillingPage = () => {
     });
     setScanResult({ type: 'success', message: `Added: ${found.name}` });
     setTimeout(() => setScanResult(null), 2000);
-  }, [products]);
+  }, [products, updateBillItems]);
 
   const handleScanSubmit = (e) => {
     if (e) e.preventDefault();
@@ -355,7 +435,7 @@ const BillingPage = () => {
 
   // --- Qty change in bill ---
   const changeQty = (idx, delta) => {
-    setBillItems((prev) => {
+    updateBillItems((prev) => {
       const updated = [...prev];
       const item = updated[idx];
       const newQty = item.quantity + delta;
@@ -384,7 +464,7 @@ const BillingPage = () => {
     }
 
     const itemTotal = (selectedProduct.mrp * itemQty) - Number(itemDiscount || 0);
-    setBillItems((prev) => [
+    updateBillItems((prev) => [
       ...prev,
       {
         product: selectedProduct,
@@ -403,22 +483,41 @@ const BillingPage = () => {
   };
 
   const removeItem = (idx) => {
-    setBillItems((prev) => prev.filter((_, i) => i !== idx));
+    updateBillItems((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const changeDiscount = (idx, newDiscount) => {
-    const disc = Math.max(0, Number(newDiscount) || 0);
-    setBillItems((prev) => {
+  const changeTotal = (idx, newTotal) => {
+    const tot = Math.max(0, Number(newTotal) || 0);
+    updateBillItems((prev) => {
       const updated = [...prev];
       const item = updated[idx];
-      updated[idx] = { ...item, discount: disc, total: Math.max(0, item.mrp * item.quantity - disc) };
+      const fullMrp = item.mrp * item.quantity;
+      const disc = Math.max(0, fullMrp - tot);
+      updated[idx] = { ...item, total: tot, discount: disc };
+      return updated;
+    });
+  };
+
+  const changeQtyDirect = (idx, newQty) => {
+    const q = Math.max(1, parseInt(newQty) || 1);
+    updateBillItems((prev) => {
+      const updated = [...prev];
+      const item = updated[idx];
+      if (q > item.product.branch_quantity) {
+        showSnackbar(`Only ${item.product.branch_quantity} in stock`, 'warning');
+        return prev;
+      }
+      updated[idx] = { ...item, quantity: q, total: item.mrp * q - item.discount };
       return updated;
     });
   };
 
   // "Save Bill" now just validates and opens the preview popup
-  const handleSaveBill = () => {
+  const handleSaveBill = async () => {
     if (billItems.length === 0) { showSnackbar('Add at least one item', 'warning'); return; }
+    // Fetch fresh bill number based on latest sales table count before showing preview
+    const freshBn = await generateBillNumber(0);
+    updateBill({ billNumber: freshBn });
     setPreviewOpen(true);
   };
 
@@ -432,21 +531,38 @@ const BillingPage = () => {
     }
     setSaving(true);
 
-    // 1. Save sale
-    const { data: sale, error: saleError } = await supabase
-      .from('sales')
-      .insert({
-        bill_number: billNumber,
-        customer_name: customerName.trim() || null,
-        customer_phone: customerPhone.trim() || null,
-        branch_id: userBranchId ?? null,
-        total_amount: subtotal,
-        discount: billItems.reduce((s, i) => s + Number(i.discount || 0), 0),
-        net_amount: netAmount,
-        created_by: user?.id,
-      })
-      .select()
-      .single();
+    // Resolve a unique bill number — retry on duplicate constraint violation
+    let resolvedBillNumber = billNumber;
+    let sale = null;
+    let saleError = null;
+    let attempts = 0;
+    while (attempts < 10) {
+      const result = await supabase
+        .from('sales')
+        .insert({
+          bill_number: resolvedBillNumber,
+          customer_name: customerName.trim() || null,
+          customer_phone: customerPhone.trim() || null,
+          branch_id: userBranchId ?? null,
+          total_amount: subtotal,
+          discount: billItems.reduce((s, i) => s + Number(i.discount || 0), 0),
+          net_amount: netAmount,
+          created_by: user?.id,
+        })
+        .select()
+        .single();
+      saleError = result.error;
+      sale = result.data;
+      if (!saleError) break; // success
+      // If it's a unique constraint violation on bill_number, generate a new one and retry
+      if (saleError.code === '23505' && saleError.message?.includes('bill_number')) {
+        resolvedBillNumber = await generateBillNumber(attempts + 1);
+        updateBill({ billNumber: resolvedBillNumber });
+        attempts++;
+        continue;
+      }
+      break; // other error — stop retrying
+    }
 
     if (saleError) {
       showSnackbar(saleError.message, 'error');
@@ -490,26 +606,33 @@ const BillingPage = () => {
       }
     }
 
-    setSaved(true);
     setSaving(false);
     fetchProducts(userBranchId);
     setPreviewOpen(false);
     showSnackbar('Bill saved successfully!');
-    setTimeout(() => { handlePrint(); }, 100);
-  };
 
-  const handleNewBill = () => {
-    setBillItems([]);
-    setCustomerName('');
-    setCustomerPhone('');
-    setBillDiscount(0);
-    setGstPercent('');
-    setSaved(false);
-    setSaving(false);
-    setScanInput('');
-    setScanResult(null);
-    generateBillNumber().then(setBillNumber);
-    fetchProducts(userBranchId);
+    // Print, then close this tab (or reset if it's the only one)
+    setTimeout(() => {
+      handlePrint();
+      setBills(prev => {
+        if (prev.length === 1) {
+          // only tab — reset to empty, generate a fresh bill number
+          generateBillNumber(0).then(bn => {
+            const reset = [EMPTY_BILL('Bill 1', bn)];
+            try { localStorage.setItem('billing_tabs', JSON.stringify(reset)); } catch {}
+            setBills(reset);
+            setActiveTab(0);
+          });
+          return prev; // will be replaced by the async call above
+        }
+        const next = prev.filter((_, i) => i !== safeTab);
+        const nextTab = Math.min(safeTab, next.length - 1);
+        try { localStorage.setItem('billing_tabs', JSON.stringify(next)); } catch {}
+        try { localStorage.setItem('billing_active_tab', String(nextTab)); } catch {}
+        setActiveTab(nextTab);
+        return next;
+      });
+    }, 100);
   };
 
   const columns = [
@@ -522,73 +645,6 @@ const BillingPage = () => {
       renderCell: (p) => <Typography variant="body2">₹{Number(p.row.mrp).toFixed(2)}</Typography>,
     },
     {
-      field: 'quantity', headerName: 'Qty', flex: 0.8, headerAlign: 'center', align: 'center',
-      renderCell: (p) => (
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          {!saved && (
-            <IconButton size="small" onClick={() => changeQty(p.row.id, -1)} disabled={p.row.quantity <= 1}>
-              <RemoveCircleOutlineRoundedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-            </IconButton>
-          )}
-          <Typography variant="body2" fontWeight={700} sx={{ minWidth: 20, textAlign: 'center' }}>{p.row.quantity}</Typography>
-          {!saved && (
-            <IconButton size="small" onClick={() => changeQty(p.row.id, 1)}>
-              <AddCircleOutlineRoundedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
-            </IconButton>
-          )}
-        </Stack>
-      ),
-    },
-    {
-      field: 'discount', headerName: 'Discount', flex: 0.7, headerAlign: 'center', align: 'center',
-      renderCell: (p) => {
-        const idx = p.row.id;
-        if (!saved && editingDiscountIdx === idx) {
-          return (
-            <input
-              autoFocus
-              type="number"
-              min="0"
-              step="0.01"
-              value={editingDiscountVal}
-              onChange={(e) => setEditingDiscountVal(e.target.value)}
-              onBlur={() => {
-                changeDiscount(idx, editingDiscountVal);
-                setEditingDiscountIdx(null);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') { changeDiscount(idx, editingDiscountVal); setEditingDiscountIdx(null); }
-                if (e.key === 'Escape') { setEditingDiscountIdx(null); }
-              }}
-              style={{
-                width: '80px', textAlign: 'center', border: '1.5px solid #E91E8C',
-                borderRadius: '6px', padding: '4px 6px', fontSize: '0.82rem',
-                outline: 'none', fontFamily: 'inherit',
-              }}
-            />
-          );
-        }
-        return (
-          <Typography
-            variant="body2"
-            color="error.main"
-            onDoubleClick={() => {
-              if (saved) return;
-              setEditingDiscountIdx(idx);
-              setEditingDiscountVal(String(p.row.discount || 0));
-            }}
-            sx={{ cursor: saved ? 'default' : 'pointer', px: 1, borderRadius: 1, '&:hover': saved ? {} : { bgcolor: 'rgba(239,68,68,0.08)' } }}
-          >
-            - ₹{Number(p.row.discount || 0).toFixed(2)}
-          </Typography>
-        );
-      },
-    },
-    {
-      field: 'total', headerName: 'Total', flex: 0.7, headerAlign: 'center', align: 'center',
-      renderCell: (p) => <Typography variant="body2" fontWeight={700} color="success.main">₹{Number(p.row.total).toFixed(2)}</Typography>,
-    },
-    {
       field: 'final_price', headerName: 'Final Price', flex: 0.7, headerAlign: 'center', align: 'center',
       renderCell: (p) => (
         <Typography variant="body2" fontWeight={600} sx={{ color: 'secondary.main' }}>
@@ -597,26 +653,91 @@ const BillingPage = () => {
       ),
     },
     {
-      field: 'remaining_qty', headerName: 'Remaining', flex: 0.7, headerAlign: 'center', align: 'center',
+      field: 'quantity', headerName: 'Qty', flex: 0.8, headerAlign: 'center', align: 'center',
       renderCell: (p) => {
-        const remaining = (p.row.product?.branch_quantity ?? 0) - p.row.quantity;
+        const idx = p.row.id;
+        if (!saved && editingQtyIdx === idx) {
+          return (
+            <input
+              autoFocus
+              type="number"
+              min="1"
+              value={editingQtyVal}
+              onChange={(e) => setEditingQtyVal(e.target.value)}
+              onBlur={() => { changeQtyDirect(idx, editingQtyVal); setEditingQtyIdx(null); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { changeQtyDirect(idx, editingQtyVal); setEditingQtyIdx(null); }
+                if (e.key === 'Escape') setEditingQtyIdx(null);
+              }}
+              style={{ width: '52px', textAlign: 'center', border: `1.5px solid ${theme.palette.primary.main}`, borderRadius: '6px', padding: '4px 6px', fontSize: '0.82rem', outline: 'none', fontFamily: 'inherit' }}
+            />
+          );
+        }
         return (
-          <Chip
-            label={remaining}
-            size="small"
-            sx={{
-              fontWeight: 700,
-              fontSize: '0.78rem',
-              bgcolor: remaining <= 0 ? 'rgba(239,68,68,0.12)' : remaining <= 5 ? 'rgba(245,158,11,0.12)' : 'rgba(34,197,94,0.12)',
-              color: remaining <= 0 ? '#DC2626' : remaining <= 5 ? '#D97706' : '#16A34A',
-              border: `1px solid ${remaining <= 0 ? 'rgba(239,68,68,0.3)' : remaining <= 5 ? 'rgba(245,158,11,0.3)' : 'rgba(34,197,94,0.3)'}`,
-            }}
-          />
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            {!saved && (
+              <IconButton size="small" onClick={() => changeQty(p.row.id, -1)} disabled={p.row.quantity <= 1}>
+                <RemoveCircleOutlineRoundedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              </IconButton>
+            )}
+            <Typography
+              variant="body2" fontWeight={700}
+              sx={{ minWidth: 20, textAlign: 'center', cursor: saved ? 'default' : 'pointer', px: 0.5, borderRadius: 1, '&:hover': saved ? {} : { bgcolor: alpha(theme.palette.primary.main, 0.08) } }}
+              onDoubleClick={() => { if (saved) return; setEditingQtyIdx(idx); setEditingQtyVal(String(p.row.quantity)); }}
+            >
+              {p.row.quantity}
+            </Typography>
+            {!saved && (
+              <IconButton size="small" onClick={() => changeQty(p.row.id, 1)}>
+                <AddCircleOutlineRoundedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+              </IconButton>
+            )}
+          </Stack>
         );
       },
     },
     {
-      field: 'actions', headerName: '', flex: 0.4, sortable: false,
+      field: 'total', headerName: 'Total', flex: 0.7, headerAlign: 'center', align: 'center',
+      renderCell: (p) => {
+        const idx = p.row.id;
+        if (!saved && editingTotalIdx === idx) {
+          return (
+            <input
+              autoFocus
+              type="text"
+              inputMode="decimal"
+              value={editingTotalVal}
+              onChange={(e) => setEditingTotalVal(e.target.value)}
+              onBlur={() => { changeTotal(idx, editingTotalVal); setEditingTotalIdx(null); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { changeTotal(idx, editingTotalVal); setEditingTotalIdx(null); }
+                if (e.key === 'Escape') setEditingTotalIdx(null);
+              }}
+              style={{ width: '80px', textAlign: 'center', border: `1.5px solid ${theme.palette.primary.main}`, borderRadius: '6px', padding: '4px 6px', fontSize: '0.82rem', outline: 'none', fontFamily: 'inherit' }}
+            />
+          );
+        }
+        return (
+          <Typography
+            variant="body2" fontWeight={700} color="success.main"
+            onDoubleClick={() => { if (saved) return; setEditingTotalIdx(idx); setEditingTotalVal(String(Math.round(p.row.total))); }}
+            sx={{ cursor: saved ? 'default' : 'pointer', px: 1, borderRadius: 1, '&:hover': saved ? {} : { bgcolor: 'rgba(34,197,94,0.08)' } }}
+          >
+            ₹{Number(p.row.total).toFixed(2)}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: 'discount', headerName: 'Discount', flex: 0.7, headerAlign: 'center', align: 'center',
+      renderCell: (p) => (
+        <Typography variant="body2" color="error.main" sx={{ px: 1 }}>
+          {Number(p.row.discount || 0) > 0 ? `- ₹${Number(p.row.discount).toFixed(2)}` : '—'}
+        </Typography>
+      ),
+    },
+    {
+      field: 'actions', headerName: 'Action', flex: 0.4, sortable: false,headerAlign: 'center', align: 'center',
       renderCell: (p) => (
         !saved && <Tooltip title="Remove"><IconButton size="small" color="error" onClick={() => removeItem(p.api.getRowIndexRelativeToVisibleRows(p.id))}><DeleteRoundedIcon fontSize="small" /></IconButton></Tooltip>
       ),
@@ -625,6 +746,82 @@ const BillingPage = () => {
 
   return (
     <Box>
+      {/* ── Bill Tabs ────────────────────────────────────────────────── */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          mb: 1.5,
+          overflowX: 'auto',
+          pb: 0.5,
+          '&::-webkit-scrollbar': { height: 4 },
+          '&::-webkit-scrollbar-thumb': { borderRadius: 2, bgcolor: 'rgba(var(--color-primary-rgb),0.3)' },
+        }}
+      >
+        {bills.map((bill, idx) => (
+          <Box
+            key={bill.id}
+            onClick={() => setActiveTab(idx)}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              px: 1.5,
+              py: 0.7,
+              borderRadius: '20px',
+              cursor: 'pointer',
+              flexShrink: 0,
+              border: '1.5px solid',
+              transition: 'all 0.18s',
+              bgcolor: safeTab === idx ? theme.palette.primary.main : 'transparent',
+              borderColor: safeTab === idx ? theme.palette.primary.main : 'rgba(var(--color-primary-rgb),0.3)',
+              '&:hover': {
+                borderColor: theme.palette.primary.main,
+                bgcolor: safeTab === idx ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.08),
+              },
+            }}
+          >
+            <Typography
+              variant="caption"
+              fontWeight={700}
+              sx={{ color: safeTab === idx ? '#fff' : 'primary.main', fontSize: '0.78rem', lineHeight: 1, whiteSpace: 'nowrap' }}
+            >
+              {`Bill ${idx + 1}`}{bill.saved ? ' ✓' : bill.billItems.length > 0 ? ` (${bill.billItems.length})` : ''}
+            </Typography>
+            {bills.length > 1 && (
+              <IconButton
+                size="small"
+                onClick={(e) => closeTab(idx, e)}
+                sx={{
+                  p: 0.1,
+                  ml: 0.3,
+                  color: safeTab === idx ? 'rgba(255,255,255,0.8)' : 'text.secondary',
+                  '&:hover': { color: safeTab === idx ? '#fff' : 'error.main', bgcolor: 'transparent' },
+                }}
+              >
+                <CloseRoundedIcon sx={{ fontSize: 13 }} />
+              </IconButton>
+            )}
+          </Box>
+        ))}
+        <Tooltip title="New bill in new tab">
+          <IconButton
+            size="small"
+            onClick={addTab}
+            sx={{
+              flexShrink: 0,
+              border: '1.5px dashed rgba(var(--color-primary-rgb),0.4)',
+              borderRadius: '50%',
+              color: 'primary.main',
+              '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.1), borderStyle: 'solid' },
+            }}
+          >
+            <AddRoundedIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
       {/* Compact Gradient Header */}
       <Paper
         elevation={0}
@@ -697,7 +894,7 @@ const BillingPage = () => {
               <Button
                 variant="outlined"
                 startIcon={<AddRoundedIcon />}
-                onClick={handleNewBill}
+                onClick={addTab}
                 sx={{
                   borderColor: 'rgba(255,255,255,0.6)',
                   color: '#fff',
@@ -770,7 +967,7 @@ const BillingPage = () => {
             label="Customer Name"
             placeholder="Optional"
             value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
+            onChange={(e) => updateBill({ customerName: e.target.value })}
             sx={{
               flex: 1,
               minWidth: { xs: '100%', sm: 180 },
@@ -788,7 +985,7 @@ const BillingPage = () => {
             label="Customer Phone"
             placeholder="Optional"
             value={customerPhone}
-            onChange={(e) => setCustomerPhone(e.target.value)}
+            onChange={(e) => updateBill({ customerPhone: e.target.value })}
             inputProps={{ maxLength: 15 }}
             sx={{
               flex: 1,
@@ -910,7 +1107,7 @@ const BillingPage = () => {
               size="small"
               placeholder="e.g. 12"
               value={gstPercent}
-              onChange={(e) => setGstPercent(e.target.value)}
+              onChange={(e) => updateBill({ gstPercent: e.target.value })}
               sx={{
                 width: 90,
                 '& .MuiOutlinedInput-root': {

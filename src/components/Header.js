@@ -11,7 +11,7 @@ import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import { useAuth } from '../context/AuthContext';
 import { useThemeContext } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/Logo.png';
+import logo from '../assets/Logo-header.png';
 
 const Header = ({ onMenuClick }) => {
   const { profile, signOut } = useAuth();
@@ -53,8 +53,18 @@ const Header = ({ onMenuClick }) => {
           <MenuRoundedIcon />
         </IconButton>
 
-        {/* Logo */}
-        <img src={logo} alt="Chellamay logo" style={{ height: 64, width: 150, filter: activeTheme.logoFilter }} />
+        {/* Logo + Shop Name */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+          <img src={logo} alt="Chellamay logo" style={{ height: 45, width: 36, filter: activeTheme.logoFilter }} />
+          <Box sx={{ lineHeight: 1.1 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: 'primary.main', lineHeight: 1.1, letterSpacing: 0.5 }}>
+              Chellamay
+            </Typography>
+            <Typography sx={{ fontWeight: 600, fontSize: '8px', color: 'text.secondary', letterSpacing: 0.5,display:'flex',justifyContent:'space-around' }}>
+              House of Toys
+            </Typography>
+          </Box>
+        </Box>
 
         <Box sx={{ flex: 1 }} />
 
@@ -79,14 +89,15 @@ const Header = ({ onMenuClick }) => {
               mt: 1, p: 1.5, borderRadius: '14px',
               boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
               border: '1.5px solid rgba(0,0,0,0.08)',
+              maxWidth: 220,
             },
           }}
         >
           <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.secondary', mb: 1, px: 0.5, letterSpacing: 1, textTransform: 'uppercase' }}>
-            Choose Theme
+            Light Themes
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {themes.map((t) => (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
+            {themes.filter(t => !t.dark).map((t) => (
               <Tooltip key={t.key} title={t.label} placement="bottom">
                 <Box
                   onClick={() => { setThemeKey(t.key); setPaletteAnchor(null); }}
@@ -101,6 +112,30 @@ const Header = ({ onMenuClick }) => {
                   }}
                 >
                   {themeKey === t.key && <CheckRoundedIcon sx={{ fontSize: 14, color: '#fff' }} />}
+                </Box>
+              </Tooltip>
+            ))}
+          </Box>
+          <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.secondary', mb: 1, px: 0.5, letterSpacing: 1, textTransform: 'uppercase' }}>
+            Dark Themes
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {themes.filter(t => t.dark).map((t) => (
+              <Tooltip key={t.key} title={t.label} placement="bottom">
+                <Box
+                  onClick={() => { setThemeKey(t.key); setPaletteAnchor(null); }}
+                  sx={{
+                    width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+                    background: `linear-gradient(135deg, ${t.primary}, ${t.secondary})`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: themeKey === t.key ? '3px solid #fff' : '3px solid transparent',
+                    outline: themeKey === t.key ? `2px solid ${t.primary}` : '2px solid transparent',
+                    boxShadow: 'inset 0 0 0 2px rgba(0,0,0,0.4)',
+                    transition: 'all 0.2s ease',
+                    '&:hover': { transform: 'scale(1.15)' },
+                  }}
+                >
+                  {themeKey === t.key && <CheckRoundedIcon sx={{ fontSize: 14, color: '#000' }} />}
                 </Box>
               </Tooltip>
             ))}

@@ -163,9 +163,9 @@ const SalesReportPage = () => {
         + '<td style="text-align:right;padding:2px 0;white-space:nowrap">' + Number(item.total).toFixed(2) + '</td>'
         + '</tr>';
     }).join('');
-    const styles = '* { box-sizing: border-box; margin: 0; padding: 0; }'
-      + 'body { font-family: "Courier New", Courier, monospace; font-size: 11px; background: #fff; color: #000; }'
-      + '.receipt { max-width: 320px; margin: auto; padding: 8px 4px; }'
+    const styles = '* { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; }'
+      + 'body { font-family: "Courier New", Courier, monospace; font-size: 11px; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }'
+      + '.receipt { max-width: 320px; margin: auto; padding: 8px 4px; color: #000; }'
       + '.c { text-align: center; } .b { font-weight: bold; }'
       + 'table { width: 100%; border-collapse: collapse; }'
       + '@page { margin: 0.3cm; size: 80mm auto; }';

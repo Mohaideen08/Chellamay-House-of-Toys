@@ -1,13 +1,19 @@
 import { createTheme } from '@mui/material/styles';
 
-export const createAppTheme = ({ primary, secondary, bg }) =>
+export const createAppTheme = ({ primary, secondary, bg, dark = false }) =>
   createTheme({
     palette: {
-      mode: 'light',
-      primary: { main: primary, contrastText: '#fff' },
-      secondary: { main: secondary, contrastText: '#fff' },
-      background: { default: bg, paper: '#fff' },
-      text: { primary: '#1A1A2E', secondary: '#6B7280' },
+      mode: dark ? 'dark' : 'light',
+      primary: { main: primary, contrastText: dark ? '#000' : '#fff' },
+      secondary: { main: secondary, contrastText: dark ? '#000' : '#fff' },
+      background: {
+        default: bg,
+        paper: dark ? '#1E1E2E' : '#fff',
+      },
+      text: {
+        primary: dark ? '#E0E0E0' : '#1A1A2E',
+        secondary: dark ? '#9E9E9E' : '#6B7280',
+      },
       success: { main: '#22C55E' },
       warning: { main: '#F59E0B' },
       error: { main: '#EF4444' },
