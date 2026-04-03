@@ -22,7 +22,7 @@ const StickerPreview = ({ items }) => {
   const now = dayjs().format('DD/MM/YY');
   return (
     <div style={{ padding: 14, background: '#e0e0e0' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
         {items.flatMap((item) =>
           Array.from({ length: item.qty }, (_, i) => {
             const code = item.product.barcode || item.product.item_code || String(item.product.id);
@@ -31,40 +31,37 @@ const StickerPreview = ({ items }) => {
                 key={`${item.product.id}-${i}`}
                 style={{
                   width: '100%',
-                  aspectRatio: '50/30',
+                  aspectRatio: '90/42',
                   border: '1px solid #ccc',
-                  borderRadius: 5,
+                  borderRadius: 6,
                   backgroundColor: '#fff',
                   fontFamily: 'Arial, sans-serif',
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
-                  padding: '4px 5px',
+                  padding: '4px 6px',
                   boxSizing: 'border-box',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
                 }}
               >
+                {/* Shop name header */}
+                <div style={{ fontSize: 7, fontWeight: 700, color: '#111', letterSpacing: 0.4, marginBottom: 2 }}>செல்லமே</div>
                 {/* Body: QR left | info right */}
-                <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 5 }}>
-
-                  {/* Shop name above QR Code */}
-                  <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ fontSize: 7, fontWeight: 700, color: '#111', letterSpacing: 0.3, marginBottom: 2 }}>செல்லமே</div>
-                    <QRCodeSVG value={code} size={40} level="M" />
+                <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 10 }}>
+                  <div style={{ flexShrink: 0 }}>
+                    <QRCodeSVG value={code} size={30} level="M" />
                   </div>
-
-                  {/* Info */}
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1 }}>
-                    <div style={{ fontSize: 6, color: '#444', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: '#111', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {item.product.name}
                     </div>
-                    <div style={{ fontSize: 10, fontWeight: 900, color: '#000', letterSpacing: 0.2 }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 900, color: '#000' }}>
                       MRP. {Number(item.product.mrp).toFixed(2)}
                     </div>
-                    <div style={{ fontSize: 7, color: '#333', fontFamily: 'monospace', fontWeight: 600 }}>
+                    <div style={{ fontSize: 9, color: '#333', fontFamily: 'monospace', fontWeight: 700 }}>
                       *{code}*
                     </div>
-                    <div style={{ fontSize: 5.5, color: '#888', marginTop: 1 }}>{now}</div>
+                    <div style={{ fontSize: 5.5, color: '#888' }}>{now}</div>
                   </div>
                 </div>
               </div>
@@ -100,7 +97,7 @@ const QRStickerPage = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const handlePrint = useCallback(() => {
-    const win = window.open('', '_blank', 'width=900,height=700');
+    const win = window.open('', '_blank', 'width=1000,height=700');
     if (!win) { showSnackbar('Pop-up blocked – allow pop-ups and try again', 'warning'); return; }
     const itemsSnap = selectedItemsRef.current;
     const now = dayjs().format('DD/MM/YY');
@@ -113,15 +110,25 @@ const QRStickerPage = () => {
         return `<div class="sticker"><div class="body"><div class="qr"><div class="shop">\u0b9a\u0bc6\u0bb2\u0bcd\u0bb2\u0bae\u0bc7</div>${qrHtml}</div><div class="info">${pname}<div class="price">MRP. ${Number(item.product.mrp).toFixed(2)}</div><div class="code">*${code}*</div><div class="dt">${now}</div></div></div></div>`;
       })
     );
-    // Group 3 stickers per page for LP 46 Lite
-    const pages = [];
-    for (let g = 0; g < stickers.length; g += 3) {
-      pages.push(`<div class="page">${stickers.slice(g, g + 3).join('')}</div>`);
-    }
-    const html = pages.join('');
-    // LP 46 Lite: 50mm x 90mm (3 stickers per label)
-    const styles = `@page{size:50mm 90mm;margin:0}*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#fff}.page{width:50mm;height:90mm;display:flex;flex-direction:column;page-break-after:always}.sticker{width:50mm;height:30mm;overflow:hidden;display:flex;flex-direction:column;padding:3pt 4pt;background:#fff}.body{display:flex;align-items:center;flex:1;gap:4pt}.qr{flex-shrink:0;display:flex;flex-direction:column;align-items:center}.shop{font-size:6pt;font-weight:700;color:#111;letter-spacing:0.3px;margin-bottom:1.5pt;text-align:center}.qr svg{width:22mm;height:22mm}.info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:1pt}.pname{font-size:5pt;color:#444;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.price{font-size:9.5pt;font-weight:900;color:#000}.code{font-size:6pt;font-weight:600;color:#333;font-family:monospace}.dt{font-size:4.5pt;color:#888;margin-top:1pt}`;
-    win.document.write('<!DOCTYPE html><html><head><title>Chellamay Toys Barcode Stickers</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
+    const html = stickers.join('');
+    // 3 stickers per row, landscape, each sticker ~90mm x 42mm
+    const styles = `
+      @page { size: A4 landscape; margin: 6mm; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; background: #fff; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+      .sticker { width: 100%; height: 42mm; overflow: hidden; display: flex; flex-direction: column; padding: 2mm 3mm; background: #fff; border: 0.5pt solid #bbb; border-radius: 4pt; }
+      .body { display: flex; align-items: center; flex: 1; gap: 5pt; }
+      .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+      .shop { font-size: 7pt; font-weight: 700; color: #111; letter-spacing: 0.4px; margin-bottom: 1pt; text-align: center; }
+      .qr svg { width: 16mm; height: 16mm; }
+      .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5pt; }
+      .pname { font-size: 7pt; font-weight: 700; color: #111; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+      .price { font-size: 11pt; font-weight: 900; color: #000; }
+      .code { font-size: 9pt; font-weight: 700; color: #333; font-family: monospace; }
+      .dt { font-size: 5pt; color: #888; margin-top: 1pt; }
+    `;
+    win.document.write('<!DOCTYPE html><html><head><title>Chellamay Toys Stickers</title><style>' + styles + '</style></head><body><div class="grid">' + html + '</div></body></html>');
     win.document.close();
     win.focus();
     setTimeout(() => { win.print(); win.close(); }, 600);
@@ -488,7 +495,7 @@ const QRStickerPage = () => {
             const code = item.product.barcode || item.product.item_code || String(item.product.id);
             return (
               <span key={`${item.product.id}-${i}`} data-qr-id={`${item.product.id}-${i}`}>
-                <QRCodeSVG value={code} size={84} level="M" />
+                <QRCodeSVG value={code} size={64} level="M" />
               </span>
             );
           })
