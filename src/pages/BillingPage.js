@@ -17,6 +17,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { supabase } from '../services/supabase';
 import { useSnackbar } from '../context/SnackbarContext';
 import { useAuth } from '../context/AuthContext';
+import { esc } from '../utils/sanitize';
 import dayjs from 'dayjs';
 
 const fadeInUp = (delay = 0) => ({
@@ -27,15 +28,20 @@ const fadeInUp = (delay = 0) => ({
   animation: `fadeInUp 0.5s ease ${delay}s both`,
 });
 
-const generateBillNumber = async (extraOffset = 0) => {
+const BRANCH_PREFIX = { tenkasi: 'Ten', alangulam: 'Ala' };
+
+const generateBillNumber = async (extraOffset = 0, branchName = '', branchId = null) => {
   const today = dayjs();
-  const { count } = await supabase
+  let query = supabase
     .from('sales')
     .select('*', { count: 'exact', head: true })
     .gte('created_at', today.startOf('day').toISOString())
     .lte('created_at', today.endOf('day').toISOString());
+  if (branchId) query = query.eq('branch_id', branchId);
+  const { count } = await query;
   const seq = String((count ?? 0) + 1 + extraOffset).padStart(4, '0');
-  return `BILL-${today.format('YYYYMMDD')}-${seq}`;
+  const prefix = BRANCH_PREFIX[branchName.trim().toLowerCase()] ?? 'BILL';
+  return `${prefix}-${today.format('YYYYMMDD')}-${seq}`;
 };
 
 const ThermalBillPreview = ({ billItems, billNumber, billDate, discount, total, netAmount, cgstAmt, sgstAmt, halfGst, gstRate, branchName, customerName, customerPhone }) => {
@@ -181,7 +187,7 @@ const BillingPage = () => {
   const addTab = () => {
     // count unsaved tabs to avoid duplicate bill numbers
     const unsavedCount = bills.filter(b => !b.saved).length;
-    generateBillNumber(unsavedCount).then(bn => {
+    generateBillNumber(unsavedCount, userBranchName, userBranchId).then(bn => {
       setBills(prev => {
         const newBill = EMPTY_BILL(`Bill ${prev.length + 1}`, bn);
         setActiveTab(prev.length);
@@ -230,7 +236,7 @@ const BillingPage = () => {
     setScanInput('');
     setScanResult(null);
     if (!activeBill.billNumber) {
-      generateBillNumber().then(bn => updateBill({ billNumber: bn }));
+      generateBillNumber(0, userBranchName, userBranchId).then(bn => updateBill({ billNumber: bn }));
     }
   }, [safeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -253,20 +259,20 @@ const BillingPage = () => {
     const hr = '<hr style="border:none;border-top:1px dashed #000;margin:3px 0">';
     const itemRows = billItems.map((item) => {
       return '<tr>'
-        + '<td style="text-align:left;padding:2px 0;overflow:hidden;white-space:nowrap;max-width:100px">' + (item.product?.name ?? '') + '</td>'
-        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + item.quantity + '</td>'
+        + '<td style="text-align:left;padding:2px 0;overflow:hidden;white-space:nowrap;max-width:100px">' + esc(item.product?.name ?? '') + '</td>'
+        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + esc(item.quantity) + '</td>'
         + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.mrp).toFixed(0) + '</td>'
         + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.discount || 0).toFixed(0) + '</td>'
         + '<td style="text-align:right;padding:2px 0;white-space:nowrap">' + Number(item.total).toFixed(2) + '</td>'
         + '</tr>';
     }).join('');
-    const styles = '* { box-sizing: border-box; margin: 0; padding: 0; }'
-      + 'body { font-family: "Courier New", Courier, monospace; font-size: 11px; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }'
-      + '.receipt { max-width: 320px; margin: auto; padding: 8px 4px; color: #000; }'
-      + '* { color: #000 !important; }'
-      + '.c { text-align: center; } .b { font-weight: bold; }'
+    const styles = '* { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; font-weight: 700 !important; }'
+      + 'body { font-family: "Courier New", Courier, monospace; font-size: 12px; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; line-height: 1.8; }'
+      + '.receipt { max-width: 320px; margin: auto; padding: 16px 6px; color: #000; }'
+      + '.c { text-align: center; } .b { font-weight: 900 !important; }'
       + 'table { width: 100%; border-collapse: collapse; }'
-      + '@page { margin: 0.3cm; size: 80mm auto; }';
+      + 'td, th { padding: 4px 2px !important; }'
+      + '@page { margin: 0.5cm; size: 80mm auto; }';
     const html = '<div class="receipt">'
       + '<div class="c b" style="font-size:14px">CHELLAMAY HOUSE OF TOYS</div>'
       + '<div class="c">27 AMMAN SANNATHI,</div>'
@@ -278,8 +284,8 @@ const BillingPage = () => {
       + hr
       + '<div style="display:flex;justify-content:space-between"><span>BillNo: ' + billNumber + '</span><span>Time: ' + snapTime + '</span></div>'
       + '<div>Date: ' + snapDate + '</div>'
-      + '<div>Name: ' + (customerName || '') + '</div>'
-      + (customerPhone ? '<div>Ph: ' + customerPhone + '</div>' : '')
+      + '<div>Name: ' + esc(customerName) + '</div>'
+      + (customerPhone ? '<div>Ph: ' + esc(customerPhone) + '</div>' : '')
       + (userBranchName ? '<div>Branch: ' + userBranchName + '</div>' : '')
       + hr
       + '<table style="table-layout:fixed;width:100%">'
@@ -313,7 +319,7 @@ const BillingPage = () => {
       + hr
       + '<div class="c b">* No Warranty - No Exchange *</div>'
       + '</div>';
-    win.document.write('<!DOCTYPE html><html><head><title>' + billNumber + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
+    win.document.write('<!DOCTYPE html><html><head><title>' + esc(billNumber) + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
     win.document.close();
     win.focus();
     setTimeout(() => { win.print(); win.close(); }, 600);
@@ -433,6 +439,18 @@ const BillingPage = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [saved, addProductByCode]);
 
+  // Re-focus scan input on any click outside inputs/dialogs
+  useEffect(() => {
+    if (saved || addItemOpen || previewOpen) return;
+    const handleClick = (e) => {
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      setTimeout(() => scanInputRef.current?.focus(), 50);
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [saved, addItemOpen, previewOpen]);
+
   // --- Qty change in bill ---
   const changeQty = (idx, delta) => {
     updateBillItems((prev) => {
@@ -516,7 +534,7 @@ const BillingPage = () => {
   const handleSaveBill = async () => {
     if (billItems.length === 0) { showSnackbar('Add at least one item', 'warning'); return; }
     // Fetch fresh bill number based on latest sales table count before showing preview
-    const freshBn = await generateBillNumber(0);
+    const freshBn = await generateBillNumber(0, userBranchName, userBranchId);
     updateBill({ billNumber: freshBn });
     setPreviewOpen(true);
   };
@@ -556,7 +574,7 @@ const BillingPage = () => {
       if (!saleError) break; // success
       // If it's a unique constraint violation on bill_number, generate a new one and retry
       if (saleError.code === '23505' && saleError.message?.includes('bill_number')) {
-        resolvedBillNumber = await generateBillNumber(attempts + 1);
+        resolvedBillNumber = await generateBillNumber(attempts + 1, userBranchName, userBranchId);
         updateBill({ billNumber: resolvedBillNumber });
         attempts++;
         continue;
@@ -617,7 +635,7 @@ const BillingPage = () => {
       setBills(prev => {
         if (prev.length === 1) {
           // only tab — reset to empty, generate a fresh bill number
-          generateBillNumber(0).then(bn => {
+          generateBillNumber(0, userBranchName, userBranchId).then(bn => {
             const reset = [EMPTY_BILL('Bill 1', bn)];
             try { localStorage.setItem('billing_tabs', JSON.stringify(reset)); } catch {}
             setBills(reset);
@@ -968,6 +986,7 @@ const BillingPage = () => {
             placeholder="Optional"
             value={customerName}
             onChange={(e) => updateBill({ customerName: e.target.value })}
+            inputProps={{ maxLength: 100 }}
             sx={{
               flex: 1,
               minWidth: { xs: '100%', sm: 180 },

@@ -15,6 +15,7 @@ import CloseRounded from '@mui/icons-material/CloseRounded';
 import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '../services/supabase';
 import { useSnackbar } from '../context/SnackbarContext';
+import { esc } from '../utils/sanitize';
 import dayjs from 'dayjs';
 
 // ─── Sticker Print Template (inline styles – works in print window) ──────────
@@ -32,7 +33,6 @@ const StickerPreview = ({ items }) => {
                 style={{
                   width: '100%',
                   aspectRatio: '90/42',
-                  border: '1px solid #ccc',
                   borderRadius: 6,
                   backgroundColor: '#fff',
                   fontFamily: 'Arial, sans-serif',
@@ -41,7 +41,7 @@ const StickerPreview = ({ items }) => {
                   flexDirection: 'column',
                   padding: '4px 6px',
                   boxSizing: 'border-box',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+                  boxShadow: 'none',
                 }}
               >
                 {/* Shop name header */}
@@ -106,18 +106,18 @@ const QRStickerPage = () => {
         const code = item.product.barcode || item.product.item_code || String(item.product.id);
         const qrEl = document.querySelector(`[data-qr-id="${item.product.id}-${i}"] svg`);
         const qrHtml = qrEl ? qrEl.outerHTML : '';
-        const pname = `<div class="pname">${item.product.name}</div>`;
-        return `<div class="sticker"><div class="body"><div class="qr"><div class="shop">\u0b9a\u0bc6\u0bb2\u0bcd\u0bb2\u0bae\u0bc7</div>${qrHtml}</div><div class="info">${pname}<div class="price">MRP. ${Number(item.product.mrp).toFixed(2)}</div><div class="code">*${code}*</div><div class="dt">${now}</div></div></div></div>`;
+        const pname = `<div class="pname">${esc(item.product.name)}</div>`;
+        return `<div class="sticker"><div class="body"><div class="qr"><div class="shop">\u0b9a\u0bc6\u0bb2\u0bcd\u0bb2\u0bae\u0bc7</div>${qrHtml}</div><div class="info">${pname}<div class="price">MRP. ${Number(item.product.mrp).toFixed(2)}</div><div class="code">*${esc(code)}*</div><div class="dt">${esc(now)}</div></div></div></div>`;
       })
     );
     const html = stickers.join('');
     // 3 stickers per row, landscape, each sticker ~90mm x 42mm
     const styles = `
-      @page { size: A4 landscape; margin: 6mm; }
+      @page { size: 4in auto; margin: 1mm; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: Arial, sans-serif; background: #fff; }
       .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
-      .sticker { width: 100%; height: 42mm; overflow: hidden; display: flex; flex-direction: column; padding: 2mm 3mm; background: #fff; border: 0.5pt solid #bbb; border-radius: 4pt; }
+      .sticker { width: 100%; height: 42mm; overflow: hidden; display: flex; flex-direction: column; padding: 2mm 3mm; background: #fff; border-radius: 4pt; }
       .body { display: flex; align-items: center; flex: 1; gap: 5pt; }
       .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
       .shop { font-size: 7pt; font-weight: 700; color: #111; letter-spacing: 0.4px; margin-bottom: 1pt; text-align: center; }
