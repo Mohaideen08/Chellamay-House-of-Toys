@@ -39,7 +39,7 @@ const generateBarcode = (seq = 1) => {
   return `CHT${ts}${num}`;
 };
 
-const SECRET_CODE = '8940880470';
+const SECRET_CODE = '9876';
 
 /* ── animation helpers ──────────────────────────────────── */
 const fadeInUp = (delay = 0) => ({

@@ -18,6 +18,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
+import { esc } from '../utils/sanitize';
 import dayjs from 'dayjs';
 
 const fadeInUp = (delay = 0) => ({
@@ -156,19 +157,20 @@ const SalesReportPage = () => {
     const hr = '<hr style="border:none;border-top:1px dashed #000;margin:3px 0">';
     const itemRows = reprintItems.map((item) => {
       return '<tr>'
-        + '<td style="text-align:left;padding:2px 0;overflow:hidden;white-space:nowrap;max-width:100px">' + (item.product?.name ?? '') + '</td>'
-        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + item.quantity + '</td>'
+        + '<td style="text-align:left;padding:2px 0;overflow:hidden;white-space:nowrap;max-width:100px">' + esc(item.product?.name ?? '') + '</td>'
+        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + esc(item.quantity) + '</td>'
         + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.mrp).toFixed(0) + '</td>'
         + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.discount || 0).toFixed(0) + '</td>'
         + '<td style="text-align:right;padding:2px 0;white-space:nowrap">' + Number(item.total).toFixed(2) + '</td>'
         + '</tr>';
     }).join('');
-    const styles = '* { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; }'
-      + 'body { font-family: "Courier New", Courier, monospace; font-size: 11px; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }'
-      + '.receipt { max-width: 320px; margin: auto; padding: 8px 4px; color: #000; }'
-      + '.c { text-align: center; } .b { font-weight: bold; }'
+    const styles = '* { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; font-weight: 700 !important; }'
+      + 'body { font-family: "Courier New", Courier, monospace; font-size: 12px; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; line-height: 1.8; }'
+      + '.receipt { max-width: 320px; margin: auto; padding: 16px 6px; color: #000; }'
+      + '.c { text-align: center; } .b { font-weight: 900 !important; }'
       + 'table { width: 100%; border-collapse: collapse; }'
-      + '@page { margin: 0.3cm; size: 80mm auto; }';
+      + 'td, th { padding: 4px 2px !important; }'
+      + '@page { margin: 0.5cm; size: 80mm auto; }';
     const html = '<div class="receipt">'
       + '<div class="c b" style="font-size:14px">CHELLAMAY HOUSE OF TOYS</div>'
       + '<div class="c">27 AMMAN SANNATHI,</div>'
@@ -178,10 +180,10 @@ const SalesReportPage = () => {
       + hr
       + '<div class="c b" style="font-size:13px;letter-spacing:2px">TaxInvoice</div>'
       + hr
-      + '<div style="display:flex;justify-content:space-between"><span>BillNo: ' + reprintSale.bill_number + '</span><span>Time: ' + snapTime + '</span></div>'
-      + '<div>Date: ' + snapDate + '</div>'
-      + (reprintSale.customer_name ? '<div>Name: ' + reprintSale.customer_name + '</div>' : '<div>Name:</div>')
-      + (reprintSale.customer_phone ? '<div>Ph: ' + reprintSale.customer_phone + '</div>' : '')
+      + '<div style="display:flex;justify-content:space-between"><span>BillNo: ' + esc(reprintSale.bill_number) + '</span><span>Time: ' + esc(snapTime) + '</span></div>'
+      + '<div>Date: ' + esc(snapDate) + '</div>'
+      + (reprintSale.customer_name ? '<div>Name: ' + esc(reprintSale.customer_name) + '</div>' : '<div>Name:</div>')
+      + (reprintSale.customer_phone ? '<div>Ph: ' + esc(reprintSale.customer_phone) + '</div>' : '')
       + hr
       + '<table style="table-layout:fixed;width:100%">'
       + '<colgroup><col><col style="width:18px"><col style="width:48px"><col style="width:32px"><col style="width:58px"></colgroup>'
@@ -214,7 +216,7 @@ const SalesReportPage = () => {
       + hr
       + '<div class="c b">* No Warranty - No Exchange *</div>'
       + '</div>';
-    win.document.write('<!DOCTYPE html><html><head><title>' + reprintSale.bill_number + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
+    win.document.write('<!DOCTYPE html><html><head><title>' + esc(reprintSale.bill_number) + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
     win.document.close();
     win.focus();
     setTimeout(() => { win.print(); win.close(); }, 600);

@@ -9,6 +9,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { isValidEmail } from '../utils/sanitize';
 import logoHeader from '../assets/Logo-header.png';
 
 const FLOAT_EMOJIS = ['🧸', '🎠', '🎮', '🪀', '🎯', '🎪', '🚂', '🎨'];
@@ -31,10 +32,14 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !password) { setError('Please fill in all fields.'); return; }
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) { setError('Please fill in all fields.'); return; }
+    if (!isValidEmail(trimmedEmail)) { setError('Please enter a valid email address.'); return; }
+    if (trimmedEmail.length > 254) { setError('Email address is too long.'); return; }
+    if (password.length > 128) { setError('Password is too long.'); return; }
     setLoading(true);
     setError('');
-    const { error: authError } = await signIn(email.trim(), password);
+    const { error: authError } = await signIn(trimmedEmail, password);
     if (authError) {
       setError(authError.message);
       setLoading(false);
@@ -271,7 +276,7 @@ const LoginPage = () => {
                   fullWidth
                   placeholder="Enter your password"
                   type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
+                  autoComplete="off"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   sx={{
