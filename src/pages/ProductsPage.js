@@ -56,6 +56,7 @@ const ProductsPage = () => {
   const { profile } = useAuth();
   const { user } = useAuth();
   const isAdmin = !!profile?.branchName; // all branch users can manage their branch
+  const isStaff = profile?.role === 'staff'; // staff = read-only except billing
   const theme = useTheme();
   useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -170,8 +171,14 @@ const ProductsPage = () => {
   const validate = () => {
     const errs = {};
     if (!form.name.trim()) errs.name = 'Product name is required';
+    if (!form.category_id) errs.category_id = 'Category is required';
+    if (!form.item_code.trim()) errs.item_code = 'Item code is required';
     if (!form.mrp || isNaN(form.mrp) || Number(form.mrp) < 0) errs.mrp = 'Valid MRP required';
     if (!form.sales_price || isNaN(form.sales_price)) errs.sales_price = 'Valid sales price required';
+    if (!form.final_price || isNaN(form.final_price)) errs.final_price = 'Final price is required';
+    if (!form.dealer_id) errs.dealer_id = 'Dealer is required';
+    const validBranchRows = branchQtys.filter((r) => r.branchId && r.qty !== '');
+    if (validBranchRows.length === 0) errs.branchQtys = 'At least one branch with quantity is required';
     if (form.barcode.trim()) {
       const duplicate = rows.find(
         (r) => r.barcode === form.barcode.trim() && r.id !== editRow?.id
@@ -345,8 +352,8 @@ const ProductsPage = () => {
             size="small"
             sx={{
               fontWeight: 700, fontSize: '0.78rem',
-              bgcolor: qty <= 5 ? alpha('#EF4444', 0.12) : alpha('#22C55E', 0.12),
-              color: qty <= 5 ? '#EF4444' : '#16A34A',
+              bgcolor: qty <= 2 ? alpha('#EF4444', 0.12) : alpha('#22C55E', 0.12),
+              color: qty <= 2 ? '#EF4444' : '#16A34A',
             }}
           />
         );
@@ -370,7 +377,7 @@ const ProductsPage = () => {
         />
       ) : <Typography variant="caption" color="text.disabled">—</Typography>,
     },
-    {
+    ...(!isStaff ? [{
       field: 'actions', headerName: 'Actions', flex: 0.9, minWidth: 140, sortable: false, align: 'center', headerAlign: 'center',
       renderCell: (p) => (
         <Stack direction="row" spacing={0.5}>
@@ -430,7 +437,7 @@ const ProductsPage = () => {
           )}
         </Stack>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -528,29 +535,95 @@ const ProductsPage = () => {
             {filtered.length} result{filtered.length !== 1 ? 's' : ''}
           </Typography>
         )}
-        <Button
-          variant="contained"
-          startIcon={<AddRoundedIcon />}
-          onClick={openAdd}
+        {!isStaff && (
+          <Button
+            variant="contained"
+            startIcon={<AddRoundedIcon />}
+            onClick={openAdd}
+            sx={{
+              whiteSpace: 'nowrap',
+              px: { xs: 2, sm: 2.5 }, py: 1,
+              fontSize: '0.85rem',
+              borderRadius: 2.5,
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.4)',
+              '&:hover': {
+                background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+                boxShadow: '0 6px 22px rgba(var(--color-primary-rgb),0.5)',
+                transform: 'translateY(-2px)',
+              },
+              transition: 'all 0.25s ease',
+              width: { xs: '100%', sm: 'auto' },
+            }}
+          >
+            Add Product
+          </Button>
+        )}
+      </Paper>
+
+      {/* ── Branch-wise Stock Summary ────────────────────── */}
+      {branches.length > 0 && (
+        <Paper
+          elevation={0}
           sx={{
-            whiteSpace: 'nowrap',
-            px: { xs: 2, sm: 2.5 }, py: 1,
-            fontSize: '0.85rem',
-            borderRadius: 2.5,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-            boxShadow: '0 4px 15px rgba(var(--color-primary-rgb),0.4)',
-            '&:hover': {
-              background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
-              boxShadow: '0 6px 22px rgba(var(--color-primary-rgb),0.5)',
-              transform: 'translateY(-2px)',
-            },
-            transition: 'all 0.25s ease',
-            width: { xs: '100%', sm: 'auto' },
+            ...fadeInUp(0.15),
+            mb: 1.5,
+            p: '6px 10px',
+            borderRadius: '8px',
+            border: '1px solid',
+            borderColor: 'rgba(var(--color-secondary-rgb),0.15)',
+            background: '#fff',
           }}
         >
-          Add Product
-        </Button>
-      </Paper>
+          <Stack direction="row" flexWrap="wrap" alignItems="center" gap={0.7}>
+            <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: 'text.secondary', mr: 0.3 }}>
+              Stock:
+            </Typography>
+            {branches.map((branch) => {
+              const total = rows.reduce((sum, r) => {
+                const qty = (r.branch_quantities ?? {})[branch.id.toString()] ?? 0;
+                return sum + qty;
+              }, 0);
+              const isLow = total <= 3;
+              return (
+                <Box
+                  key={branch.id}
+                  sx={{
+                    display: 'flex', alignItems: 'center', gap: 0.5,
+                    px: 0.8, py: '2px',
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: isLow ? alpha('#EF4444', 0.3) : alpha(theme.palette.secondary.main, 0.2),
+                    bgcolor: isLow ? alpha('#EF4444', 0.05) : alpha(theme.palette.secondary.main, 0.05),
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.68rem', fontWeight: 600, color: isLow ? '#EF4444' : 'text.secondary' }}>
+                    {branch.name}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: isLow ? '#EF4444' : 'secondary.dark' }}>
+                    {total}
+                  </Typography>
+                </Box>
+              );
+            })}
+            <Box
+              sx={{
+                display: 'flex', alignItems: 'center', gap: 0.5,
+                px: 0.8, py: '2px',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: alpha(theme.palette.primary.main, 0.25),
+                bgcolor: alpha(theme.palette.primary.main, 0.05),
+              }}
+            >
+              <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: 'primary.main' }}>Total</Typography>
+              <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: 'primary.dark' }}>
+                {rows.reduce((sum, r) => sum + (r.current_quantity ?? 0), 0)}
+              </Typography>
+            </Box>
+          </Stack>
+        </Paper>
+      )}
 
       {/* ── Data Grid ───────────────────────────────────── */}
       <Paper
@@ -671,15 +744,16 @@ const ProductsPage = () => {
                     placeholder="e.g. Remote Control Car"
                     sx={fieldSx}
                   />
-                  <TextField select label="Category" fullWidth value={form.category_id}
-                    onChange={(e) => setField('category_id', e.target.value)} sx={fieldSx}>
-                    <MenuItem value=""><em>None</em></MenuItem>
+                  <TextField select label="Category *" fullWidth value={form.category_id}
+                    onChange={(e) => setField('category_id', e.target.value)}
+                    error={!!errors.category_id} helperText={errors.category_id} sx={fieldSx}>
                     {categories.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                   </TextField>
                 </Box>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
-                  <TextField label="Item Code" fullWidth value={form.item_code}
+                  <TextField label="Item Code *" fullWidth value={form.item_code}
                     onChange={(e) => setField('item_code', e.target.value)}
+                    error={!!errors.item_code} helperText={errors.item_code}
                     placeholder="e.g. TOY-001" sx={fieldSx} />
                   <TextField label="Barcode" fullWidth value={form.barcode}
                     onChange={(e) => setField('barcode', e.target.value)}
@@ -762,6 +836,9 @@ const ProductsPage = () => {
                       );
                     })}
                   </Stack>
+                  {errors.branchQtys && (
+                    <Typography sx={{ fontSize: '0.75rem', color: 'error.main', mt: 0.5 }}>{errors.branchQtys}</Typography>
+                  )}
                   {!profile?.branchName && branchQtys.length < branches.length && (
                     <Button
                       size="small"
@@ -824,8 +901,9 @@ const ProductsPage = () => {
                   error={!!errors.sales_price} helperText={errors.sales_price}
                   InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
                   inputProps={{ min: 0, step: '0.01' }} sx={fieldSx} />
-                <TextField label="Final Price" type="number" fullWidth value={form.final_price}
+                <TextField label="Final Price *" type="number" fullWidth value={form.final_price}
                   onChange={(e) => setField('final_price', e.target.value)}
+                  error={!!errors.final_price} helperText={errors.final_price}
                   placeholder="e.g. after discount/offer"
                   InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
                   inputProps={{ min: 0, step: '0.01' }} sx={fieldSx} />
@@ -879,9 +957,9 @@ const ProductsPage = () => {
                 <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'secondary.main' }}>Assignment</Typography>
               </Box>
               <Box sx={{ p: 2.5 }}>
-                <TextField select label="Dealer" fullWidth value={form.dealer_id}
-                  onChange={(e) => setField('dealer_id', e.target.value)} sx={fieldSx}>
-                  <MenuItem value=""><em>None</em></MenuItem>
+                <TextField select label="Dealer *" fullWidth value={form.dealer_id}
+                  onChange={(e) => setField('dealer_id', e.target.value)}
+                  error={!!errors.dealer_id} helperText={errors.dealer_id} sx={fieldSx}>
                   {dealers.map((d) => <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>)}
                 </TextField>
               </Box>

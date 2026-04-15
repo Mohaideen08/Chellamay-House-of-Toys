@@ -23,7 +23,7 @@ const StickerPreview = ({ items }) => {
   const now = dayjs().format('DD/MM/YY');
   return (
     <div style={{ padding: 14, background: '#e0e0e0' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
         {items.flatMap((item) =>
           Array.from({ length: item.qty }, (_, i) => {
             const code = item.product.barcode || item.product.item_code || String(item.product.id);
@@ -32,7 +32,7 @@ const StickerPreview = ({ items }) => {
                 key={`${item.product.id}-${i}`}
                 style={{
                   width: '100%',
-                  aspectRatio: '90/42',
+                  aspectRatio: '35/22',
                   borderRadius: 6,
                   backgroundColor: '#fff',
                   fontFamily: 'Arial, sans-serif',
@@ -49,14 +49,14 @@ const StickerPreview = ({ items }) => {
                 {/* Body: QR left | info right */}
                 <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 10 }}>
                   <div style={{ flexShrink: 0 }}>
-                    <QRCodeSVG value={code} size={30} level="M" />
+                    <QRCodeSVG value={code} size={16} level="M" />
                   </div>
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
                     <div style={{ fontSize: 7, fontWeight: 700, color: '#111', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {item.product.name}
                     </div>
-                    <div style={{ fontSize: 9.5, fontWeight: 900, color: '#000' }}>
-                      MRP. {Number(item.product.mrp).toFixed(2)}
+                    <div style={{ fontSize: 7, fontWeight: 900, color: '#000' }}>
+                      MRP. {Math.round(item.product.mrp)}
                     </div>
                     <div style={{ fontSize: 9, color: '#333', fontFamily: 'monospace', fontWeight: 700 }}>
                       *{code}*
@@ -107,26 +107,27 @@ const QRStickerPage = () => {
         const qrEl = document.querySelector(`[data-qr-id="${item.product.id}-${i}"] svg`);
         const qrHtml = qrEl ? qrEl.outerHTML : '';
         const pname = `<div class="pname">${esc(item.product.name)}</div>`;
-        return `<div class="sticker"><div class="body"><div class="qr"><div class="shop">\u0b9a\u0bc6\u0bb2\u0bcd\u0bb2\u0bae\u0bc7</div>${qrHtml}</div><div class="info">${pname}<div class="price">MRP. ${Number(item.product.mrp).toFixed(2)}</div><div class="code">*${esc(code)}*</div><div class="dt">${esc(now)}</div></div></div></div>`;
+        return `<div class="sticker"><div class="body"><div class="qr"><div class="shop">\u0b9a\u0bc6\u0bb2\u0bcd\u0bb2\u0bae\u0bc7</div>${qrHtml}</div><div class="info">${pname}<div class="price">MRP. ${Math.round(item.product.mrp)}</div><div class="code">*${esc(code)}*</div><div class="dt">${esc(now)}</div></div></div></div>`;
       })
     );
     const html = stickers.join('');
-    // 3 stickers per row, landscape, each sticker ~90mm x 42mm
+    // 3 stickers per row, A4 width, height fits content only
     const styles = `
-      @page { size: 4in auto; margin: 1mm; }
+      @page { margin: 4mm; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; background: #fff; }
-      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
-      .sticker { width: 100%; height: 42mm; overflow: hidden; display: flex; flex-direction: column; padding: 2mm 3mm; background: #fff; border-radius: 4pt; }
-      .body { display: flex; align-items: center; flex: 1; gap: 5pt; }
+      body { font-family: Arial, sans-serif; background: #fff; width: 202mm; height: auto; }
+      .grid { display: grid; grid-template-columns: repeat(3, 35mm); gap: 2mm; width: fit-content; }
+      .sticker { width: 35mm; height: 22mm; overflow: hidden; display: flex; flex-direction: column; padding: 1mm 1.5mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
+      .body { display: flex; align-items: center; flex: 1; gap: 2pt; overflow: hidden; }
       .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-      .shop { font-size: 7pt; font-weight: 700; color: #111; letter-spacing: 0.4px; margin-bottom: 1pt; text-align: center; }
-      .qr svg { width: 16mm; height: 16mm; }
-      .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5pt; }
-      .pname { font-size: 7pt; font-weight: 700; color: #111; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-      .price { font-size: 11pt; font-weight: 900; color: #000; }
-      .code { font-size: 9pt; font-weight: 700; color: #333; font-family: monospace; }
-      .dt { font-size: 5pt; color: #888; margin-top: 1pt; }
+      .shop { font-size: 5pt; font-weight: 700; color: #111; letter-spacing: 0.3px; margin-bottom: 1pt; text-align: center; }
+      .qr svg { width: 8mm; height: 8mm; display: block; }
+      .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.5pt; overflow: hidden; }
+      .pname { font-size: 5.5pt; font-weight: 700; color: #111; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+      .price { font-size: 6pt; font-weight: 900; color: #000; white-space: nowrap; }
+      .code { font-size: 6pt; font-weight: 700; color: #333; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .dt { font-size: 4pt; color: #888; }
+      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     `;
     win.document.write('<!DOCTYPE html><html><head><title>Chellamay Toys Stickers</title><style>' + styles + '</style></head><body><div class="grid">' + html + '</div></body></html>');
     win.document.close();
@@ -495,7 +496,7 @@ const QRStickerPage = () => {
             const code = item.product.barcode || item.product.item_code || String(item.product.id);
             return (
               <span key={`${item.product.id}-${i}`} data-qr-id={`${item.product.id}-${i}`}>
-                <QRCodeSVG value={code} size={64} level="M" />
+                <QRCodeSVG value={code} size={48} level="M" />
               </span>
             );
           })

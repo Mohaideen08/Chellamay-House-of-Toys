@@ -659,11 +659,11 @@ const BillingPage = () => {
       renderCell: (p) => <Typography variant="body2" fontWeight={600}>{p.row.product?.name}</Typography>,
     },
     {
-      field: 'mrp', headerName: 'MRP', flex: 0.7, headerAlign: 'center', align: 'center',
+      field: 'mrp', headerName: 'MRP', flex:1, headerAlign: 'center', align: 'center',
       renderCell: (p) => <Typography variant="body2">₹{Number(p.row.mrp).toFixed(2)}</Typography>,
     },
     {
-      field: 'final_price', headerName: 'Final Price', flex: 0.7, headerAlign: 'center', align: 'center',
+      field: 'final_price', headerName: 'Final Price', flex: 1, headerAlign: 'center', align: 'center',
       renderCell: (p) => (
         <Typography variant="body2" fontWeight={600} sx={{ color: 'secondary.main' }}>
           {p.row.product?.final_price != null ? `₹${Number(p.row.product.final_price).toFixed(2)}` : '—'}
@@ -671,7 +671,7 @@ const BillingPage = () => {
       ),
     },
     {
-      field: 'quantity', headerName: 'Qty', flex: 0.8, headerAlign: 'center', align: 'center',
+      field: 'quantity', headerName: 'Qty', flex: 1, headerAlign: 'center', align: 'center',
       renderCell: (p) => {
         const idx = p.row.id;
         if (!saved && editingQtyIdx === idx) {
@@ -715,7 +715,7 @@ const BillingPage = () => {
       },
     },
     {
-      field: 'total', headerName: 'Total', flex: 0.7, headerAlign: 'center', align: 'center',
+      field: 'total', headerName: 'Total', flex:1, headerAlign: 'center', align: 'center',
       renderCell: (p) => {
         const idx = p.row.id;
         if (!saved && editingTotalIdx === idx) {
@@ -747,7 +747,7 @@ const BillingPage = () => {
       },
     },
     {
-      field: 'discount', headerName: 'Discount', flex: 0.7, headerAlign: 'center', align: 'center',
+      field: 'discount', headerName: 'Discount', flex: 1, headerAlign: 'center', align: 'center',
       renderCell: (p) => (
         <Typography variant="body2" color="error.main" sx={{ px: 1 }}>
           {Number(p.row.discount || 0) > 0 ? `- ₹${Number(p.row.discount).toFixed(2)}` : '—'}
@@ -755,7 +755,7 @@ const BillingPage = () => {
       ),
     },
     {
-      field: 'actions', headerName: 'Action', flex: 0.4, sortable: false,headerAlign: 'center', align: 'center',
+      field: 'actions', headerName: 'Action', flex: 0.8, sortable: false,headerAlign: 'center', align: 'center',
       renderCell: (p) => (
         !saved && <Tooltip title="Remove"><IconButton size="small" color="error" onClick={() => removeItem(p.api.getRowIndexRelativeToVisibleRows(p.id))}><DeleteRoundedIcon fontSize="small" /></IconButton></Tooltip>
       ),
@@ -1196,6 +1196,7 @@ const BillingPage = () => {
             )}
           </Box>
         ) : (
+          <Box sx={{ overflowX: 'auto', width: '100%' }}>
           <DataGrid
             rows={billItems.map((item, i) => ({ ...item, id: i }))}
             columns={columns}
@@ -1204,6 +1205,7 @@ const BillingPage = () => {
             disableRowSelectionOnClick
             sx={{
               border: 'none',
+              minWidth: 650,
               '& .MuiDataGrid-columnHeaders': {
                 background: 'linear-gradient(90deg, rgba(var(--color-primary-rgb),0.08) 0%, rgba(var(--color-secondary-rgb),0.08) 100%)',
                 borderRadius: '8px 8px 0 0',
@@ -1226,6 +1228,7 @@ const BillingPage = () => {
               '& .MuiDataGrid-cell': { borderColor: 'rgba(var(--color-primary-rgb),0.08)' },
             }}
           />
+          </Box>
         )}
       </Paper>
 
