@@ -11,10 +11,6 @@ const EMAIL_CONFIG = {
   'tenkasistaff@gmail.com': { branchName: 'Tenkasi',   role: 'staff' },
 };
 
-// Keep EMAIL_BRANCH_MAP for backward compat
-const EMAIL_BRANCH_MAP = Object.fromEntries(
-  Object.entries(EMAIL_CONFIG).map(([email, cfg]) => [email, cfg.branchName])
-);
 
 const buildProfile = (user) => {
   const e = user.email?.toLowerCase().trim();
