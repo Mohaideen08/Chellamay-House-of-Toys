@@ -15,6 +15,7 @@ import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import { supabase } from '../services/supabase';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useSnackbar } from '../context/SnackbarContext';
+import { useAuth } from '../context/AuthContext';
 import dayjs from 'dayjs';
 
 const EMPTY_FORM = { name: '', phone: '', address: '' };
@@ -33,6 +34,8 @@ const fadeInUp = (delay = 0) => ({
 
 const DealersPage = () => {
   const { showSnackbar } = useSnackbar();
+  const { profile } = useAuth();
+  const isStaff = profile?.role === 'staff';
   const theme = useTheme();
   useMediaQuery(theme.breakpoints.down('sm')); // keeps responsive recalcs
   const [rows, setRows] = useState([]);
@@ -195,7 +198,7 @@ const DealersPage = () => {
         />
       ),
     },
-    {
+    ...(!isStaff ? [{
       field: 'actions',
       headerName: 'Actions',
       flex: 0.6,
@@ -233,7 +236,7 @@ const DealersPage = () => {
           </Tooltip>
         </Stack>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -333,6 +336,7 @@ const DealersPage = () => {
             {filtered.length} result{filtered.length !== 1 ? 's' : ''}
           </Typography>
         )}
+        {!isStaff && (
         <Button
           variant="contained"
           startIcon={<AddRoundedIcon />}
@@ -356,6 +360,7 @@ const DealersPage = () => {
         >
           Add Dealer
         </Button>
+        )}
       </Paper>
 
       {/* ── Data Grid ───────────────────────────────────── */}

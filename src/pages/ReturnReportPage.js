@@ -52,6 +52,7 @@ const ReturnReportPage = () => {
   const theme = useTheme();
   const { user, profile } = useAuth();
   const isAdmin = !!profile?.branchName; // all branch users can delete their returns
+  const isStaff = profile?.role === 'staff';
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -266,7 +267,7 @@ const ReturnReportPage = () => {
               </IconButton>
             </span>
           </Tooltip>
-          {isAdmin && (
+          {isAdmin && !isStaff && (
             <Tooltip title="Delete">
               <IconButton size="small" sx={{ color: 'primary.main' }} onClick={() => setDeleteTarget(p.row)}>
                 <DeleteRoundedIcon fontSize="small" />
@@ -332,6 +333,7 @@ const ReturnReportPage = () => {
             >
               {filterOpen ? 'Hide Filters' : 'Filters'}
             </Button>
+            {!isStaff && (
             <Button
               variant="contained"
               size="small"
@@ -351,6 +353,7 @@ const ReturnReportPage = () => {
             >
               Add Return
             </Button>
+            )}
           </Box>
         </Paper>
 

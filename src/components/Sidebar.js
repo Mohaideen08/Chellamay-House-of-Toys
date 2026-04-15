@@ -17,7 +17,7 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 
-export const DRAWER_WIDTH = 190;
+export const DRAWER_WIDTH = 195;
 
 const BRANCH_MENU = [
   { label: 'Dashboard', path: '/dashboard', icon: DashboardRoundedIcon },

@@ -15,6 +15,7 @@ import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import { supabase } from '../services/supabase';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useSnackbar } from '../context/SnackbarContext';
+import { useAuth } from '../context/AuthContext';
 import dayjs from 'dayjs';
 
 
@@ -30,6 +31,8 @@ const fadeInUp = (delay = 0) => ({
 
 const CategoriesPage = () => {
   const { showSnackbar } = useSnackbar();
+  const { profile } = useAuth();
+  const isStaff = profile?.role === 'staff';
   const theme = useTheme();
   useMediaQuery(theme.breakpoints.down('sm'));
   const [rows, setRows] = useState([]);
@@ -145,7 +148,7 @@ const CategoriesPage = () => {
         />
       ),
     },
-    {
+    ...(!isStaff ? [{
       field: 'actions',
       headerName: 'Actions',
       flex: 0.6,
@@ -183,7 +186,7 @@ const CategoriesPage = () => {
           </Tooltip>
         </Stack>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -283,6 +286,7 @@ const CategoriesPage = () => {
             {filtered.length} result{filtered.length !== 1 ? 's' : ''}
           </Typography>
         )}
+        {!isStaff && (
         <Button
           variant="contained"
           startIcon={<AddRoundedIcon />}
@@ -306,6 +310,7 @@ const CategoriesPage = () => {
         >
           Add Category
         </Button>
+        )}
       </Paper>
 
       {/* ── Data Grid ───────────────────────────────────── */}

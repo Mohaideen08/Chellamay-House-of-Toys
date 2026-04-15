@@ -3,25 +3,26 @@ import { supabase } from '../services/supabase';
 
 const AuthContext = createContext(null);
 
-// Map branch emails to their default branch name (must match branch name in DB)
-const EMAIL_BRANCH_MAP = {
-  'tenkasi@gmail.com':   'Tenkasi',
-  'alangulam@gmail.com': 'Alangulam',
+// Map emails to { branchName, role }
+// roles: 'admin' = full access, 'staff' = read-only + billing add/edit only
+const EMAIL_CONFIG = {
+  'tenkasi@gmail.com':      { branchName: 'Tenkasi',   role: 'admin' },
+  'alangulam@gmail.com':    { branchName: 'Alangulam', role: 'admin' },
+  'tenkasistaff@gmail.com': { branchName: 'Tenkasi',   role: 'staff' },
 };
 
-const getRoleFromEmail = (email) => {
-  const e = email?.toLowerCase().trim();
-  if (EMAIL_BRANCH_MAP[e]) return 'branch';
-  return 'staff';
-};
 
-const buildProfile = (user) => ({
-  id: user.id,
-  username: user.email.split('@')[0],
-  email: user.email,
-  role: getRoleFromEmail(user.email),
-  branchName: EMAIL_BRANCH_MAP[user.email?.toLowerCase().trim()] ?? null,
-});
+const buildProfile = (user) => {
+  const e = user.email?.toLowerCase().trim();
+  const cfg = EMAIL_CONFIG[e] ?? { branchName: null, role: 'staff' };
+  return {
+    id: user.id,
+    username: user.email.split('@')[0],
+    email: user.email,
+    role: cfg.role,
+    branchName: cfg.branchName,
+  };
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
