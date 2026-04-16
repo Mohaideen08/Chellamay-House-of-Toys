@@ -116,16 +116,16 @@ const QRStickerPage = () => {
       @page { margin: 4mm; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: Arial, sans-serif; background: #fff; width: 202mm; height: auto; }
-      .grid { display: grid; grid-template-columns: repeat(3, 35mm); gap: 2mm; width: fit-content; }
-      .sticker { width: 35mm; height: 22mm; overflow: hidden; display: flex; flex-direction: column; padding: 1mm 1.5mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
+      .grid { display: grid; grid-template-columns: repeat(3, 55mm); gap: 2mm; width: fit-content; }
+      .sticker { width: 55mm; height: 42mm; overflow: hidden; display: flex; flex-direction: column; padding: 1mm 1.5mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
       .body { display: flex; align-items: center; flex: 1; gap: 2pt; overflow: hidden; }
       .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
       .shop { font-size: 5pt; font-weight: 700; color: #111; letter-spacing: 0.3px; margin-bottom: 1pt; text-align: center; }
-      .qr svg { width: 8mm; height: 8mm; display: block; }
+      .qr svg { width: 12mm; height: 12mm; display: block; }
       .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.5pt; overflow: hidden; }
-      .pname { font-size: 5.5pt; font-weight: 700; color: #111; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-      .price { font-size: 6pt; font-weight: 900; color: #000; white-space: nowrap; }
-      .code { font-size: 6pt; font-weight: 700; color: #333; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .pname { font-size: 5.5pt; font-weight: 900; color: #111; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+      .price { font-size: 5pt; font-weight: 900; color: #000; white-space: nowrap; }
+      .code { font-size: 6pt; font-weight: 900; color: #333; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .dt { font-size: 4pt; color: #888; }
       @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     `;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Box, Button, Typography, Dialog, DialogContent, DialogActions,
   TextField, IconButton, Tooltip, Stack, Paper, InputAdornment, MenuItem,
@@ -89,6 +89,19 @@ const ProductsPage = () => {
   const [ppSecretDialogOpen, setPpSecretDialogOpen] = useState(false);
   const [ppSecretCode, setPpSecretCode] = useState('');
   const [ppSecretError, setPpSecretError] = useState('');
+
+  // Form field refs for Enter-key navigation
+  const nameRef = useRef(null);
+  const categoryContainerRef = useRef(null);
+  const itemCodeRef = useRef(null);
+  const barcodeRef = useRef(null);
+  const hsnRef = useRef(null);
+  const mrpRef = useRef(null);
+  const purchasePriceRef = useRef(null);
+  const salesPriceRef = useRef(null);
+  const finalPriceRef = useRef(null);
+  const dealerContainerRef = useRef(null);
+  const branchQtyRef = useRef(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -233,7 +246,18 @@ const ProductsPage = () => {
     } else {
       const { error } = await supabase.from('products').insert(payload);
       if (error) { showSnackbar(error.message, 'error'); }
-      else { showSnackbar('Product added'); fetchAll(); setDialogOpen(false); }
+      else {
+        showSnackbar('Product added');
+        fetchAll();
+        const userBranch = profile?.branchName
+          ? branches.find((b) => b.name.toLowerCase() === profile.branchName.toLowerCase())
+          : null;
+        setForm({ ...EMPTY_FORM, barcode: generateBarcode(rows.length + 2) });
+        setBranchQtys([{ branchId: userBranch ? userBranch.id.toString() : '', qty: '' }]);
+        setPpUnlocked(false);
+        setErrors({});
+        setTimeout(() => nameRef.current?.focus(), 50);
+      }
     }
     setSaving(false);
   };
@@ -674,7 +698,8 @@ const ProductsPage = () => {
       {/* ── Add / Edit Dialog ───────────────────────────── */}
       <Dialog
         open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
+        onClose={(_, reason) => { if (reason !== 'backdropClick') setDialogOpen(false); }}
+        disableEscapeKeyDown
         maxWidth="md"
         fullWidth
         scroll="paper"
@@ -742,24 +767,35 @@ const ProductsPage = () => {
                     onChange={(e) => setField('name', e.target.value)}
                     error={!!errors.name} helperText={errors.name}
                     placeholder="e.g. Remote Control Car"
+                    inputRef={nameRef}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); categoryContainerRef.current?.querySelector('[tabindex="0"]')?.focus(); } }}
                     sx={fieldSx}
                   />
-                  <TextField select label="Category *" fullWidth value={form.category_id}
-                    onChange={(e) => setField('category_id', e.target.value)}
-                    error={!!errors.category_id} helperText={errors.category_id} sx={fieldSx}>
-                    {categories.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-                  </TextField>
+                  <Box ref={categoryContainerRef}>
+                    <TextField select label="Category *" fullWidth value={form.category_id}
+                      onChange={(e) => setField('category_id', e.target.value)}
+                      error={!!errors.category_id} helperText={errors.category_id}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); itemCodeRef.current?.focus(); } }}
+                      sx={fieldSx}>
+                      {categories.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                    </TextField>
+                  </Box>
                 </Box>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
                   <TextField label="Item Code *" fullWidth value={form.item_code}
                     onChange={(e) => setField('item_code', e.target.value)}
                     error={!!errors.item_code} helperText={errors.item_code}
-                    placeholder="e.g. TOY-001" sx={fieldSx} />
+                    placeholder="e.g. TOY-001"
+                    inputRef={itemCodeRef}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); barcodeRef.current?.focus(); } }}
+                    sx={fieldSx} />
                   <TextField label="Barcode" fullWidth value={form.barcode}
                     onChange={(e) => setField('barcode', e.target.value)}
                     placeholder="Scan or type barcode"
                     error={!!errors.barcode}
                     helperText={errors.barcode}
+                    inputRef={barcodeRef}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); hsnRef.current?.focus(); } }}
                     sx={fieldSx}
                     InputProps={{
                       endAdornment: !editRow && (
@@ -775,7 +811,10 @@ const ProductsPage = () => {
                   />
                   <TextField label="HSN (Optional)" fullWidth value={form.hsn}
                     onChange={(e) => setField('hsn', e.target.value)}
-                    placeholder="e.g. 9503" sx={fieldSx} />
+                    placeholder="e.g. 9503"
+                    inputRef={hsnRef}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); branchQtyRef.current?.focus(); } }}
+                    sx={fieldSx} />
                 </Box>
                 {/* Branch-wise Quantity – dynamic rows */}
                 <Box>
@@ -818,6 +857,8 @@ const ProductsPage = () => {
                             size="small"
                             value={row.qty}
                             onChange={(e) => setBranchQtys((prev) => prev.map((r, i) => i === idx ? { ...r, qty: e.target.value } : r))}
+                            inputRef={idx === 0 ? branchQtyRef : undefined}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); mrpRef.current?.focus(); } }}
                             inputProps={{ min: 0 }}
                             sx={{ ...fieldSx, width: 110 }}
                             helperText={editRow && row.branchId
@@ -868,6 +909,8 @@ const ProductsPage = () => {
                 <TextField label="MRP *" type="number" fullWidth value={form.mrp}
                   onChange={(e) => setField('mrp', e.target.value)}
                   error={!!errors.mrp} helperText={errors.mrp}
+                  inputRef={mrpRef}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (!editRow || ppUnlocked ? purchasePriceRef : salesPriceRef).current?.focus(); } }}
                   InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
                   inputProps={{ min: 0, step: '0.01' }} sx={fieldSx} />
                 {editRow && !ppUnlocked ? (
@@ -886,6 +929,8 @@ const ProductsPage = () => {
                     type="number" fullWidth
                     value={form.purchase_price}
                     onChange={(e) => setField('purchase_price', e.target.value)}
+                    inputRef={purchasePriceRef}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); salesPriceRef.current?.focus(); } }}
                     InputProps={{
                       startAdornment: <InputAdornment position="start">₹</InputAdornment>,
                       endAdornment: editRow && ppUnlocked ? (
@@ -899,12 +944,16 @@ const ProductsPage = () => {
                 <TextField label="Sales Price *" type="number" fullWidth value={form.sales_price}
                   onChange={(e) => setField('sales_price', e.target.value)}
                   error={!!errors.sales_price} helperText={errors.sales_price}
+                  inputRef={salesPriceRef}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); finalPriceRef.current?.focus(); } }}
                   InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
                   inputProps={{ min: 0, step: '0.01' }} sx={fieldSx} />
                 <TextField label="Final Price *" type="number" fullWidth value={form.final_price}
                   onChange={(e) => setField('final_price', e.target.value)}
                   error={!!errors.final_price} helperText={errors.final_price}
                   placeholder="e.g. after discount/offer"
+                  inputRef={finalPriceRef}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dealerContainerRef.current?.querySelector('[tabindex="0"]')?.focus(); } }}
                   InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
                   inputProps={{ min: 0, step: '0.01' }} sx={fieldSx} />
               </Box>
@@ -956,7 +1005,7 @@ const ProductsPage = () => {
                 <GroupWorkRoundedIcon sx={{ color: 'secondary.main', fontSize: 18 }} />
                 <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'secondary.main' }}>Assignment</Typography>
               </Box>
-              <Box sx={{ p: 2.5 }}>
+              <Box sx={{ p: 2.5 }} ref={dealerContainerRef}>
                 <TextField select label="Dealer *" fullWidth value={form.dealer_id}
                   onChange={(e) => setField('dealer_id', e.target.value)}
                   error={!!errors.dealer_id} helperText={errors.dealer_id} sx={fieldSx}>
@@ -1011,7 +1060,8 @@ const ProductsPage = () => {
       {/* ── Restock Dialog ──────────────────────────────── */}
       <Dialog
         open={!!restockTarget}
-        onClose={() => { setRestockTarget(null); setRestockBranchId(''); }}
+        onClose={(_, reason) => { if (reason !== 'backdropClick') { setRestockTarget(null); setRestockBranchId(''); } }}
+        disableEscapeKeyDown
         maxWidth="xs"
         fullWidth
         PaperProps={{ sx: { borderRadius: '10px', overflow: 'hidden' } }}
@@ -1117,7 +1167,8 @@ const ProductsPage = () => {
       {/* ── Secret: View Purchase Price Dialog ──────────── */}
       <Dialog
         open={!!secretViewTarget}
-        onClose={() => { setSecretViewTarget(null); setSecretViewRevealed(false); setSecretViewCode(''); setSecretViewError(''); }}
+        onClose={(_, reason) => { if (reason !== 'backdropClick') { setSecretViewTarget(null); setSecretViewRevealed(false); setSecretViewCode(''); setSecretViewError(''); } }}
+        disableEscapeKeyDown
         maxWidth="xs"
         fullWidth
         PaperProps={{ sx: { borderRadius: '14px', overflow: 'hidden' } }}
@@ -1202,7 +1253,8 @@ const ProductsPage = () => {
       {/* ── Secret: Unlock Purchase Price Edit Dialog ────── */}
       <Dialog
         open={ppSecretDialogOpen}
-        onClose={() => { setPpSecretDialogOpen(false); setPpSecretCode(''); setPpSecretError(''); }}
+        onClose={(_, reason) => { if (reason !== 'backdropClick') { setPpSecretDialogOpen(false); setPpSecretCode(''); setPpSecretError(''); } }}
+        disableEscapeKeyDown
         maxWidth="xs"
         fullWidth
         PaperProps={{ sx: { borderRadius: '14px', overflow: 'hidden' } }}
