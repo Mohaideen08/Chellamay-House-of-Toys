@@ -229,7 +229,6 @@ const BillingPage = () => {
   const barcodeBuffer = useRef('');
   const barcodeTimeout = useRef(null);
   const isEditingCellRef = useRef(false);
-  const justSelectedRef = useRef(false);
 
   // Reset transient editing state when switching tabs
   useEffect(() => {
@@ -431,15 +430,6 @@ const BillingPage = () => {
     setScanResult({ type: 'success', message: `Added: ${found.name}` });
     setTimeout(() => setScanResult(null), 2000);
   }, [products, updateBillItems]);
-
-  const handleScanSubmit = (e) => {
-    if (e) e.preventDefault();
-    if (justSelectedRef.current) { justSelectedRef.current = false; return; }
-    if (!scanInput.trim()) return;
-    addProductByCode(scanInput.trim());
-    setScanInput('');
-    setTimeout(() => scanInputRef.current?.focus(), 50);
-  };
 
   // Global keydown listener for USB barcode scanners (rapid typing + Enter)
   useEffect(() => {
