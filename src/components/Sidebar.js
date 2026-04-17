@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import QrCodeScannerRoundedIcon from '@mui/icons-material/QrCodeScannerRounded';
@@ -16,6 +17,7 @@ import SystemUpdateAltRoundedIcon from '@mui/icons-material/SystemUpdateAltRound
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
+import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 
 export const DRAWER_WIDTH = 195;
 
@@ -33,14 +35,17 @@ const BRANCH_MENU = [
   { label: 'Return Report', path: '/return-report', icon: AssignmentReturnRoundedIcon },
   { label: 'Restock Report', path: '/restock-report', icon: SystemUpdateAltRoundedIcon },
   { label: 'Low Stock', path: '/low-stock', icon: WarningAmberRoundedIcon },
+  { label: 'Stock Cost Report', path: '/stock-cost-report', icon: AccountBalanceWalletRoundedIcon, adminOnly: true },
 ];
 
 const SidebarContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
   const p = theme.palette.primary.main;
-  const menuItems = BRANCH_MENU;
+  const menuItems = BRANCH_MENU.filter((item) => !item.adminOnly || isAdmin);
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', bgcolor: 'background.paper' }}>

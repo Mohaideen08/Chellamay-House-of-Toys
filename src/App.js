@@ -24,6 +24,7 @@ import ProductReportPage from './pages/ProductReportPage';
 import ReturnReportPage from './pages/ReturnReportPage';
 import RestockReportPage from './pages/RestockReportPage';
 import LowStockPage from './pages/LowStockPage';
+import StockCostReportPage from './pages/StockCostReportPage';
 
 const AppRoutes = () => {
   const { loading } = useAuth();
@@ -52,6 +53,7 @@ const AppRoutes = () => {
           <Route path="return-report" element={<ReturnReportPage />} />
           <Route path="low-stock" element={<LowStockPage />} />
           <Route path="restock-report" element={<RestockReportPage />} />
+          <Route path="stock-cost-report" element={<ProtectedRoute roles={['admin']}><StockCostReportPage /></ProtectedRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
