@@ -55,33 +55,33 @@ const ThermalBillPreview = ({ billItems, billNumber, billDate, discount, total, 
     <Box sx={{ fontFamily: mono, fontSize: '12px', maxWidth: 320, mx: 'auto', p: 2, bgcolor: '#fff', color: '#000', '& *': { color: '#000 !important' } }}>
       <Box sx={{ textAlign: 'center' }}>
         <Typography sx={{ fontFamily: 'inherit', fontWeight: 'bold', fontSize: '14px' }}>CHELLAMAY HOUSE OF TOYS</Typography>
-        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>27 AMMAN SANNATHI,</Typography>
-        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>TENKASI-627811</Typography>
-        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>Ph: 8883509501/8680086899</Typography>
-        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>GSTIN: 33BQNPP8756L1ZY</Typography>
+        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>27 AMMAN SANNATHI,</Typography>
+        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>TENKASI-627811</Typography>
+        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>Ph: 8883509501/8680086899</Typography>
+        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>GSTIN: 33BQNPP8756L1ZY</Typography>
       </Box>
       <Dash />
       <Typography sx={{ textAlign: 'center', fontFamily: 'inherit', fontWeight: 'bold' }}>TaxInvoice</Typography>
       <Dash />
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '11px' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '11px' , fontWeight: 'bold'}}>
         <span>BillNo:{billNumber}</span>
         <span>Time:{timePart}</span>
       </Box>
-      <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>Date:{datePart}</Typography>
-      {customerName && <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>Name:{customerName}</Typography>}
-      {customerPhone && <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>Phone:{customerPhone}</Typography>}
-      {branchName && <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>Branch:{branchName}</Typography>}
+      <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' , fontWeight: 'bold'}}>Date:{datePart}</Typography>
+      {customerName && <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>Name:{customerName}</Typography>}
+      {customerPhone && <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>Phone:{customerPhone}</Typography>}
+      {branchName && <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>Branch:{branchName}</Typography>}
       <Dash />
       <Box sx={{ display: 'flex', fontFamily: mono, fontSize: '10px', fontWeight: 'bold', borderBottom: '1px dashed #000', pb: '3px', mb: '2px' }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>Item</Box>
-        <Box sx={{ width: 20, textAlign: 'right', flexShrink: 0 }}>Q</Box>
+        <Box sx={{ width: 20, textAlign: 'right', flexShrink: 0 }}>Qty</Box>
         <Box sx={{ width: 46, textAlign: 'right', flexShrink: 0 }}>MRP</Box>
         <Box sx={{ width: 30, textAlign: 'right', flexShrink: 0 }}>Disc</Box>
         <Box sx={{ width: 58, textAlign: 'right', flexShrink: 0 }}>Amount</Box>
       </Box>
       <Dash />
       {billItems.map((item, i) => (
-        <Box key={i} sx={{ display: 'flex', fontFamily: mono, fontSize: '10px', mb: '3px' }}>
+        <Box key={i} sx={{ display: 'flex', fontFamily: mono, fontSize: '10px', mb: '3px',fontWeight: 'bold' }}>
           <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.product?.name || item.name}</Box>
           <Box sx={{ width: 20, textAlign: 'right', flexShrink: 0 }}>{item.quantity}</Box>
           <Box sx={{ width: 46, textAlign: 'right', flexShrink: 0 }}>{Number(item.mrp).toFixed(0)}</Box>
@@ -109,7 +109,7 @@ const ThermalBillPreview = ({ billItems, billNumber, billDate, discount, total, 
       </Box>
       <Dash />
       {totalDiscount > 0 && (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '11px' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '11px', fontWeight: 'bold' }}>
           <span>Total Discount :</span><span>-₹{totalDiscount.toFixed(2)}</span>
         </Box>
       )}
@@ -228,6 +228,7 @@ const BillingPage = () => {
   const scanInputRef = useRef(null);
   const barcodeBuffer = useRef('');
   const barcodeTimeout = useRef(null);
+  const isEditingCellRef = useRef(false);
 
   // Reset transient editing state when switching tabs
   useEffect(() => {
@@ -366,6 +367,26 @@ const BillingPage = () => {
   const billDate = dayjs().format('DD MMM YYYY, hh:mm A');
 
   // --- Barcode scan logic ---
+  const addProductDirect = useCallback((found) => {
+    if ((found.branch_quantity ?? 0) < 1) {
+      setScanResult({ type: 'error', message: `"${found.name}" is out of stock` });
+      setTimeout(() => setScanResult(null), 3000);
+      return;
+    }
+    updateBillItems((prev) => {
+      const idx = prev.findIndex((i) => i.product.id === found.id);
+      if (idx >= 0) {
+        const updated = [...prev];
+        const newQty = updated[idx].quantity + 1;
+        updated[idx] = { ...updated[idx], quantity: newQty, total: found.mrp * newQty - updated[idx].discount };
+        return updated;
+      }
+      return [...prev, { product: found, quantity: 1, mrp: found.mrp, sales_price: found.sales_price, discount: 0, total: found.mrp }];
+    });
+    setScanResult({ type: 'success', message: `Added: ${found.name}` });
+    setTimeout(() => setScanResult(null), 2000);
+  }, [updateBillItems]);
+
   const addProductByCode = useCallback((code) => {
     const found = products.find(
       (p) =>
@@ -410,14 +431,6 @@ const BillingPage = () => {
     setTimeout(() => setScanResult(null), 2000);
   }, [products, updateBillItems]);
 
-  const handleScanSubmit = (e) => {
-    if (e) e.preventDefault();
-    if (!scanInput.trim()) return;
-    addProductByCode(scanInput.trim());
-    setScanInput('');
-    setTimeout(() => scanInputRef.current?.focus(), 50);
-  };
-
   // Global keydown listener for USB barcode scanners (rapid typing + Enter)
   useEffect(() => {
     if (saved) return;
@@ -445,7 +458,11 @@ const BillingPage = () => {
     const handleClick = (e) => {
       const tag = e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      setTimeout(() => scanInputRef.current?.focus(), 50);
+      if (isEditingCellRef.current) return;
+      setTimeout(() => {
+        if (isEditingCellRef.current) return;
+        scanInputRef.current?.focus();
+      }, 80);
     };
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
@@ -663,6 +680,14 @@ const BillingPage = () => {
       renderCell: (p) => <Typography variant="body2">₹{Number(p.row.mrp).toFixed(2)}</Typography>,
     },
     {
+      field: 'sales_price', headerName: 'Sales Price', flex: 1, headerAlign: 'center', align: 'center',
+      renderCell: (p) => (
+        <Typography variant="body2" fontWeight={600} sx={{ color: 'primary.main' }}>
+          {p.row.sales_price != null ? `₹${Number(p.row.sales_price).toFixed(2)}` : '—'}
+        </Typography>
+      ),
+    },
+    {
       field: 'final_price', headerName: 'Final Price', flex: 1, headerAlign: 'center', align: 'center',
       renderCell: (p) => (
         <Typography variant="body2" fontWeight={600} sx={{ color: 'secondary.main' }}>
@@ -682,10 +707,10 @@ const BillingPage = () => {
               min="1"
               value={editingQtyVal}
               onChange={(e) => setEditingQtyVal(e.target.value)}
-              onBlur={() => { changeQtyDirect(idx, editingQtyVal); setEditingQtyIdx(null); }}
+              onBlur={() => { changeQtyDirect(idx, editingQtyVal); setEditingQtyIdx(null); isEditingCellRef.current = false; }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') { changeQtyDirect(idx, editingQtyVal); setEditingQtyIdx(null); }
-                if (e.key === 'Escape') setEditingQtyIdx(null);
+                if (e.key === 'Enter') { changeQtyDirect(idx, editingQtyVal); setEditingQtyIdx(null); isEditingCellRef.current = false; }
+                if (e.key === 'Escape') { setEditingQtyIdx(null); isEditingCellRef.current = false; }
               }}
               style={{ width: '52px', textAlign: 'center', border: `1.5px solid ${theme.palette.primary.main}`, borderRadius: '6px', padding: '4px 6px', fontSize: '0.82rem', outline: 'none', fontFamily: 'inherit' }}
             />
@@ -701,7 +726,7 @@ const BillingPage = () => {
             <Typography
               variant="body2" fontWeight={700}
               sx={{ minWidth: 20, textAlign: 'center', cursor: saved ? 'default' : 'pointer', px: 0.5, borderRadius: 1, '&:hover': saved ? {} : { bgcolor: alpha(theme.palette.primary.main, 0.08) } }}
-              onDoubleClick={() => { if (saved) return; setEditingQtyIdx(idx); setEditingQtyVal(String(p.row.quantity)); }}
+              onDoubleClick={() => { if (saved) return; isEditingCellRef.current = true; setEditingQtyIdx(idx); setEditingQtyVal(String(p.row.quantity)); }}
             >
               {p.row.quantity}
             </Typography>
@@ -726,10 +751,10 @@ const BillingPage = () => {
               inputMode="decimal"
               value={editingTotalVal}
               onChange={(e) => setEditingTotalVal(e.target.value)}
-              onBlur={() => { changeTotal(idx, editingTotalVal); setEditingTotalIdx(null); }}
+              onBlur={() => { changeTotal(idx, editingTotalVal); setEditingTotalIdx(null); isEditingCellRef.current = false; }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') { changeTotal(idx, editingTotalVal); setEditingTotalIdx(null); }
-                if (e.key === 'Escape') setEditingTotalIdx(null);
+                if (e.key === 'Enter') { changeTotal(idx, editingTotalVal); setEditingTotalIdx(null); isEditingCellRef.current = false; }
+                if (e.key === 'Escape') { setEditingTotalIdx(null); isEditingCellRef.current = false; }
               }}
               style={{ width: '80px', textAlign: 'center', border: `1.5px solid ${theme.palette.primary.main}`, borderRadius: '6px', padding: '4px 6px', fontSize: '0.82rem', outline: 'none', fontFamily: 'inherit' }}
             />
@@ -738,21 +763,13 @@ const BillingPage = () => {
         return (
           <Typography
             variant="body2" fontWeight={700} color="success.main"
-            onDoubleClick={() => { if (saved) return; setEditingTotalIdx(idx); setEditingTotalVal(String(Math.round(p.row.total))); }}
+            onDoubleClick={() => { if (saved) return; isEditingCellRef.current = true; setEditingTotalIdx(idx); setEditingTotalVal(String(Math.round(p.row.total))); }}
             sx={{ cursor: saved ? 'default' : 'pointer', px: 1, borderRadius: 1, '&:hover': saved ? {} : { bgcolor: 'rgba(34,197,94,0.08)' } }}
           >
             ₹{Number(p.row.total).toFixed(2)}
           </Typography>
         );
       },
-    },
-    {
-      field: 'discount', headerName: 'Discount', flex: 1, headerAlign: 'center', align: 'center',
-      renderCell: (p) => (
-        <Typography variant="body2" color="error.main" sx={{ px: 1 }}>
-          {Number(p.row.discount || 0) > 0 ? `- ₹${Number(p.row.discount).toFixed(2)}` : '—'}
-        </Typography>
-      ),
     },
     {
       field: 'actions', headerName: 'Action', flex: 0.8, sortable: false,headerAlign: 'center', align: 'center',
@@ -1025,8 +1042,6 @@ const BillingPage = () => {
       {!saved && (
         <Paper
           elevation={0}
-          component="form"
-          onSubmit={handleScanSubmit}
           sx={{
             display: 'flex',
             alignItems: 'center',
@@ -1042,28 +1057,101 @@ const BillingPage = () => {
           }}
         >
           <QrCodeScannerRoundedIcon sx={{ color: 'primary.main', fontSize: 26, flexShrink: 0 }} />
-          <TextField
-            inputRef={scanInputRef}
-            size="small"
-            placeholder="Scan barcode or type item code + Enter"
-            value={scanInput}
-            onChange={(e) => setScanInput(e.target.value)}
-            autoFocus
-            sx={{
-              flex: 1,
-              minWidth: { xs: '100%', sm: 'auto' },
-              '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '10px',
-                '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
-              },
+          <Autocomplete
+            freeSolo
+            disableClearable
+            options={
+              scanInput.trim().length >= 1
+                ? products.filter(
+                    (p) =>
+                      !billItems.some((i) => i.product.id === p.id) &&
+                      (
+                        (p.name && p.name.toLowerCase().includes(scanInput.toLowerCase())) ||
+                        (p.item_code && p.item_code.toLowerCase().includes(scanInput.toLowerCase()))
+                      )
+                  )
+                : []
+            }
+            filterOptions={(x) => x}
+            getOptionLabel={(opt) =>
+              typeof opt === 'string' ? opt : opt.name
+            }
+            inputValue={scanInput}
+            onInputChange={(_, val, reason) => {
+              if (reason !== 'reset') setScanInput(val);
             }}
+            onChange={(_, val) => {
+              if (val && typeof val === 'object') {
+                addProductDirect(val);
+                setScanInput('');
+                setTimeout(() => scanInputRef.current?.focus(), 50);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.defaultPrevented) {
+                e.preventDefault();
+                if (!scanInput.trim()) return;
+                addProductByCode(scanInput.trim());
+                setScanInput('');
+                setTimeout(() => scanInputRef.current?.focus(), 50);
+              }
+            }}
+            renderOption={(props, opt) => (
+              <li {...props} key={opt.id} style={{ padding: '5px 14px' }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ width: '100%' }}>
+                  {opt.item_code && (
+                    <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700, minWidth: 60, flexShrink: 0 }}>
+                      {opt.item_code}
+                    </Typography>
+                  )}
+                  <Typography variant="body2" sx={{ flex: 1, fontWeight: 600 }} noWrap>{opt.name}</Typography>
+                  {(opt.barcode || opt.item_code) && (
+                    <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: 'monospace', fontSize: '0.68rem', flexShrink: 0 }}>
+                      {opt.barcode || opt.item_code}
+                    </Typography>
+                  )}
+                  <Typography variant="caption" sx={{
+                    fontSize: '0.68rem', fontWeight: 700, px: 0.8, py: 0.1, borderRadius: 1, flexShrink: 0,
+                    bgcolor: (opt.current_quantity ?? 0) > 10 ? 'rgba(34,197,94,0.1)' : (opt.current_quantity ?? 0) > 0 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
+                    color: (opt.current_quantity ?? 0) > 10 ? '#16A34A' : (opt.current_quantity ?? 0) > 0 ? '#B45309' : '#EF4444',
+                  }}>
+                    Qty:{opt.current_quantity ?? 0}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap', fontWeight: 700, flexShrink: 0 }}>
+                    ₹{Number(opt.mrp).toFixed(2)}
+                  </Typography>
+                </Stack>
+              </li>
+            )}
+            sx={{ flex: 1, minWidth: { xs: '100%', sm: 'auto' } }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                inputRef={scanInputRef}
+                size="small"
+                placeholder="Scan barcode or type item code + Enter"
+                autoFocus
+                sx={{
+                  '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '10px',
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
+                  },
+                }}
+              />
+            )}
           />
           <Button
-            type="submit"
+            type="button"
             size="small"
             variant="contained"
+            onClick={() => {
+              if (!scanInput.trim()) return;
+              addProductByCode(scanInput.trim());
+              setScanInput('');
+              setTimeout(() => scanInputRef.current?.focus(), 50);
+            }}
             sx={{
               background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
               minWidth: 72,
@@ -1348,7 +1436,16 @@ const BillingPage = () => {
           <Stack spacing={2.5}>
             <Autocomplete
               options={products}
-              getOptionLabel={(p) => `${p.name}${p.item_code ? ` (${p.item_code})` : ''}`}
+              getOptionLabel={(p) => typeof p === 'string' ? p : `${p.item_code ? p.item_code + ' – ' : ''}${p.name}`}
+              filterOptions={(opts, { inputValue }) =>
+                inputValue.trim().length === 0
+                  ? opts
+                  : opts.filter(
+                      (p) =>
+                        (p.name && p.name.toLowerCase().includes(inputValue.toLowerCase())) ||
+                        (p.item_code && p.item_code.toLowerCase().includes(inputValue.toLowerCase()))
+                    )
+              }
               value={selectedProduct}
               onChange={(_, v) => { setSelectedProduct(v); setItemQty(1); setItemDiscount(0); }}
               renderInput={(params) => (
@@ -1360,22 +1457,39 @@ const BillingPage = () => {
                     '& .MuiInputBase-input::placeholder': { fontSize: '0.77rem' },
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '10px',
-                      '&:hover .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { bordercolor: 'primary.main' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
                     },
                     '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
                   }}
                 />
               )}
               renderOption={(props, p) => (
-                <Box component="li" {...props}>
-                  <Box>
-                    <Typography variant="body2" fontWeight={600}>{p.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Code: {p.item_code || '—'} · MRP: ₹{Number(p.mrp).toFixed(2)} · Stock: {p.branch_quantity ?? 0}
+                <li {...props} key={p.id} style={{ padding: '5px 14px' }}>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ width: '100%' }}>
+                    {p.item_code && (
+                      <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700, minWidth: 60, flexShrink: 0 }}>
+                        {p.item_code}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" sx={{ flex: 1, fontWeight: 600 }} noWrap>{p.name}</Typography>
+                    {(p.barcode || p.item_code) && (
+                      <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: 'monospace', fontSize: '0.68rem', flexShrink: 0 }}>
+                        {p.barcode || p.item_code}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" sx={{
+                      fontSize: '0.68rem', fontWeight: 700, px: 0.8, py: 0.1, borderRadius: 1, flexShrink: 0,
+                      bgcolor: (p.branch_quantity ?? 0) > 10 ? 'rgba(34,197,94,0.1)' : (p.branch_quantity ?? 0) > 0 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
+                      color: (p.branch_quantity ?? 0) > 10 ? '#16A34A' : (p.branch_quantity ?? 0) > 0 ? '#B45309' : '#EF4444',
+                    }}>
+                      Qty:{p.branch_quantity ?? 0}
                     </Typography>
-                  </Box>
-                </Box>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap', fontWeight: 700, flexShrink: 0 }}>
+                      ₹{Number(p.mrp).toFixed(2)}
+                    </Typography>
+                  </Stack>
+                </li>
               )}
             />
 

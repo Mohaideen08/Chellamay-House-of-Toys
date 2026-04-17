@@ -111,22 +111,28 @@ const QRStickerPage = () => {
       })
     );
     const html = stickers.join('');
-    // 3 stickers per row, A4 width, height fits content only
+    // Calculate page height based on rows needed (3 stickers per row, 62mm per row, 2mm gap)
+    const rows = Math.ceil(stickers.length / 3);
+    const stickerH = 62; // mm per sticker row
+    const gapMm = 2;
+    const marginMm = 4;
+    const pageH = rows * stickerH + (rows - 1) * gapMm + marginMm * 2;
+    // 3 stickers per row, page height dynamically sized to rows needed
     const styles = `
-      @page { margin: 4mm; }
+      @page { size: 210mm ${pageH}mm; margin: ${marginMm}mm; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; background: #fff; width: 202mm; height: auto; }
-      .grid { display: grid; grid-template-columns: repeat(3, 55mm); gap: 2mm; width: fit-content; }
-      .sticker { width: 55mm; height: 42mm; overflow: hidden; display: flex; flex-direction: column; padding: 1mm 1.5mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
+      body { font-family: Arial, sans-serif; background: #fff; width: 202mm; height: fit-content; }
+      .grid { display: grid; grid-template-columns: repeat(3, 65mm); gap: ${gapMm}mm; width: fit-content; }
+      .sticker { width: 65mm; height: ${stickerH}mm; overflow: hidden; display: flex; flex-direction: column; padding: 1mm 1.5mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
       .body { display: flex; align-items: center; flex: 1; gap: 2pt; overflow: hidden; }
       .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-      .shop { font-size: 5pt; font-weight: 700; color: #111; letter-spacing: 0.3px; margin-bottom: 1pt; text-align: center; }
-      .qr svg { width: 12mm; height: 12mm; display: block; }
+      .shop { font-size: 6pt; font-weight: 700; color: #111; letter-spacing: 0.3px; margin-bottom: 1pt; text-align: center; }
+      .qr svg { width: 16mm; height: 16mm; display: block; }
       .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.5pt; overflow: hidden; }
-      .pname { font-size: 5.5pt; font-weight: 900; color: #111; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-      .price { font-size: 5pt; font-weight: 900; color: #000; white-space: nowrap; }
-      .code { font-size: 6pt; font-weight: 900; color: #333; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .dt { font-size: 4pt; color: #888; }
+      .pname { font-size: 6.5pt; font-weight: 900; color: #111; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+      .price { font-size: 7pt; font-weight: 900; color: #000; white-space: nowrap; }
+      .code { font-size: 7pt; font-weight: 900; color: #333; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .dt { font-size: 6pt; color: #888; }
       @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     `;
     win.document.write('<!DOCTYPE html><html><head><title>Chellamay Toys Stickers</title><style>' + styles + '</style></head><body><div class="grid">' + html + '</div></body></html>');
