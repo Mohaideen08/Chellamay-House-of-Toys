@@ -267,7 +267,7 @@ const StockCostReportPage = () => {
             overflow: 'hidden',
           }}
         >
-          {/* Filter Toolbar */}
+          {/* Filter Toolbars */}
           <Box sx={{
             px: { xs: 1.5, sm: 2.5 }, py: 1.8,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
