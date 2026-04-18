@@ -12,6 +12,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
 import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
+import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
@@ -20,6 +21,8 @@ import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
 import { esc } from '../utils/sanitize';
 import dayjs from 'dayjs';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const fadeInUp = (delay = 0) => ({
   '@keyframes fadeInUp': {
@@ -41,33 +44,33 @@ const ThermalBillPreview = ({ billItems, billNumber, billDate, discount, total, 
   const mono = '"Courier New", Courier, monospace';
   const Dash = () => <Box sx={{ borderTop: '1px dashed #000', my: '4px' }} />;
   return (
-    <Box sx={{ fontFamily: mono, fontSize: '12px', maxWidth: 320, mx: 'auto', p: 2, bgcolor: '#fff', color: '#000' }}>
+    <Box sx={{ fontFamily: mono, fontSize: '12px', maxWidth: 320, mx: 'auto', p: 2, bgcolor: '#fff', color: '#000', '& *': { color: '#000 !important' } }}>
       <Box sx={{ textAlign: 'center' }}>
         <Typography sx={{ fontFamily: 'inherit', fontWeight: 'bold', fontSize: '14px' }}>CHELLAMAY HOUSE OF TOYS</Typography>
-        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>27 AMMAN SANNATHI,</Typography>
-        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>TENKASI-627811</Typography>
-        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>Ph: 8883509501/8680086899</Typography>
-        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>GSTIN: 33BQNPP8756L1ZY</Typography>
+        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>27 AMMAN SANNATHI,</Typography>
+        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>TENKASI-627811</Typography>
+        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>Ph: 8883509501/8680086899</Typography>
+        <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>GSTIN: 33BQNPP8756L1ZY</Typography>
       </Box>
       <Dash />
       <Typography sx={{ textAlign: 'center', fontFamily: 'inherit', fontWeight: 'bold' }}>TaxInvoice</Typography>
       <Dash />
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '11px' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '11px', fontWeight: 'bold' }}>
         <span>BillNo:{billNumber}</span>
         <span>Time:{timePart}</span>
       </Box>
-      <Typography sx={{ fontFamily: 'inherit', fontSize: '11px' }}>Date:{datePart}</Typography>
+      <Typography sx={{ fontFamily: 'inherit', fontSize: '11px', fontWeight: 'bold' }}>Date:{datePart}</Typography>
       <Dash />
       <Box sx={{ display: 'flex', fontFamily: mono, fontSize: '10px', fontWeight: 'bold', borderBottom: '1px dashed #000', pb: '3px', mb: '2px' }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>Item</Box>
-        <Box sx={{ width: 20, textAlign: 'right', flexShrink: 0 }}>Q</Box>
+        <Box sx={{ width: 20, textAlign: 'right', flexShrink: 0 }}>Qty</Box>
         <Box sx={{ width: 46, textAlign: 'right', flexShrink: 0 }}>MRP</Box>
         <Box sx={{ width: 30, textAlign: 'right', flexShrink: 0 }}>Disc</Box>
         <Box sx={{ width: 58, textAlign: 'right', flexShrink: 0 }}>Amount</Box>
       </Box>
       <Dash />
       {billItems.map((item, i) => (
-        <Box key={i} sx={{ display: 'flex', fontFamily: mono, fontSize: '10px', mb: '3px' }}>
+        <Box key={i} sx={{ display: 'flex', fontFamily: mono, fontSize: '10px', mb: '3px', fontWeight: 'bold' }}>
           <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.product?.name || item.name}</Box>
           <Box sx={{ width: 20, textAlign: 'right', flexShrink: 0 }}>{item.quantity}</Box>
           <Box sx={{ width: 46, textAlign: 'right', flexShrink: 0 }}>{Number(item.mrp).toFixed(0)}</Box>
@@ -93,7 +96,7 @@ const ThermalBillPreview = ({ billItems, billNumber, billDate, discount, total, 
       </Box>
       <Dash />
       {totalDiscount > 0 && (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '11px' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '11px', fontWeight: 'bold' }}>
           <span>Total Discount :</span><span>-₹{totalDiscount.toFixed(2)}</span>
         </Box>
       )}
@@ -222,6 +225,90 @@ const SalesReportPage = () => {
     setTimeout(() => { win.print(); win.close(); }, 600);
   };
 
+  const handleDownloadPDF = async (sale) => {
+    const { data: items } = await supabase
+      .from('sale_items')
+      .select('*, product:products(name)')
+      .eq('sale_id', sale.id);
+    const saleItems = items ?? [];
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 297] });
+    const created = dayjs(sale.created_at);
+    const totalGst = Math.max(0, Number(sale.net_amount) - Number(sale.total_amount));
+    const cgstAmt = totalGst / 2;
+    const sgstAmt = totalGst / 2;
+    const totalItems = saleItems.length;
+    const totalQty = saleItems.reduce((s, i) => s + i.quantity, 0);
+    const totalDiscount = saleItems.reduce((s, i) => s + Number(i.discount || 0), 0);
+    const pw = doc.internal.pageSize.getWidth();
+    let y = 6;
+    doc.setTextColor(0);
+    const line = (text, size = 8, bold = false, align = 'center') => {
+      doc.setFontSize(size);
+      doc.setFont('courier', bold ? 'bold' : 'normal');
+      doc.setTextColor(0);
+      doc.text(text, align === 'center' ? pw / 2 : 2, y, { align });
+      y += size * 0.5;
+    };
+    const dash = () => { doc.setDrawColor(0); doc.setLineDashPattern([1, 1], 0); doc.line(2, y, pw - 2, y); y += 2; };
+
+    line('CHELLAMAY HOUSE OF TOYS', 9, true);
+    line('27 AMMAN SANNATHI,', 7);
+    line('TENKASI-627811', 7);
+    line('Ph: 8883509501/8680086899', 7);
+    line('GSTIN: 33BQNPP8756L1ZY', 7);
+    dash();
+    line('Tax Invoice', 8, true);
+    dash();
+    doc.setFontSize(7); doc.setFont('courier', 'bold');
+    doc.text(`BillNo:${sale.bill_number}`, 2, y);
+    doc.text(`Time:${created.format('hh:mm A')}`, pw - 2, y, { align: 'right' });
+    y += 3.5;
+    line(`Date:${created.format('DD-MM-YYYY')}`, 7, true, 'left');
+    if (sale.customer_name) line(`Name:${sale.customer_name}`, 7, true, 'left');
+    if (sale.customer_phone) line(`Ph:${sale.customer_phone}`, 7, true, 'left');
+    dash();
+
+    autoTable(doc, {
+      startY: y,
+      head: [['Item', 'Q', 'MRP', 'Disc', 'Amt']],
+      body: saleItems.map((it) => [
+        it.product?.name ?? '',
+        it.quantity,
+        Number(it.mrp).toFixed(0),
+        Number(it.discount || 0).toFixed(0),
+        Number(it.total).toFixed(2),
+      ]),
+      styles: { fontSize: 6.5, cellPadding: 1, font: 'courier', fontStyle: 'bold', textColor: 0 },
+      headStyles: { fillColor: [255, 255, 255], textColor: 0, fontStyle: 'bold', lineWidth: 0, lineColor: 0 },
+      columnStyles: {
+        0: { cellWidth: 28, overflow: 'ellipsize' },
+        1: { halign: 'right', cellWidth: 8 },
+        2: { halign: 'right', cellWidth: 14 },
+        3: { halign: 'right', cellWidth: 10 },
+        4: { halign: 'right', cellWidth: 14 },
+      },
+      margin: { left: 2, right: 2 },
+      tableLineWidth: 0,
+      didDrawPage: (d) => { y = d.cursor.y + 2; },
+    });
+    y = doc.lastAutoTable.finalY + 2;
+    dash();
+    doc.setFontSize(7); doc.setFont('courier', 'bold'); doc.setTextColor(0);
+    doc.text(`Items:${totalItems}  Qty:${totalQty}`, 2, y);
+    doc.text(Number(sale.total_amount).toFixed(2), pw - 2, y, { align: 'right' }); y += 3.5;
+    dash();
+    doc.text('TaxableAmt', 2, y); doc.text('CGST', pw / 2, y, { align: 'center' }); doc.text('SGST', pw - 2, y, { align: 'right' }); y += 3.5;
+    doc.text(Number(sale.total_amount).toFixed(2), 2, y); doc.text(cgstAmt.toFixed(2), pw / 2, y, { align: 'center' }); doc.text(sgstAmt.toFixed(2), pw - 2, y, { align: 'right' }); y += 3.5;
+    dash();
+    if (totalDiscount > 0) { doc.text('Total Discount:', 2, y); doc.text(`-Rs.${totalDiscount.toFixed(2)}`, pw - 2, y, { align: 'right' }); y += 3.5; }
+    if (totalGst > 0) { doc.text('Total GST:', 2, y); doc.text(`Rs.${totalGst.toFixed(2)}`, pw - 2, y, { align: 'right' }); y += 3.5; dash(); }
+    doc.setFontSize(10); doc.setFont('courier', 'bold');
+    doc.text('Total:', 2, y); doc.text(`Rs.${Number(sale.net_amount).toFixed(2)}`, pw - 2, y, { align: 'right' }); y += 5;
+    dash();
+    doc.setFontSize(7); doc.text('* No Warranty - No Exchange *', pw / 2, y, { align: 'center' });
+    doc.save(`Bill_${sale.bill_number}.pdf`);
+  };
+
   const handleReprintClick = async (sale) => {
     setReprintLoading(true);
     setReprintSale(sale);
@@ -322,18 +409,20 @@ const SalesReportPage = () => {
       renderCell: (p) => <Typography variant="body2" fontWeight={700} color="success.main">₹{Number(p.value).toFixed(2)}</Typography>,
     },
     {
-      field: 'actions', headerName: '', flex: 0.5, minWidth: 90, sortable: false, align: 'center', headerAlign: 'center',
-      renderHeader: () => <PrintRoundedIcon sx={{ fontSize: 18, color: 'primary.dark' }} />,
+      field: 'actions', headerName: 'Actions', flex: 0.7, minWidth: 100, sortable: false, align: 'center', headerAlign: 'center',
       renderCell: (p) => (
-        <Tooltip title="Reprint Bill">
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => handleReprintClick(p.row)}
-          >
-            <PrintRoundedIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <Tooltip title="Reprint Bill">
+            <IconButton size="small" color="primary" onClick={() => handleReprintClick(p.row)}>
+              <PrintRoundedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Download PDF">
+            <IconButton size="small" color="secondary" onClick={() => handleDownloadPDF(p.row)}>
+              <DownloadRoundedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
       ),
     },
   ];

@@ -10,7 +10,7 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
-import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
+import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
@@ -19,8 +19,9 @@ import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from '../context/SnackbarContext';
-import { esc } from '../utils/sanitize';
 import dayjs from 'dayjs';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const fadeInUp = (delay = 0) => ({
   '@keyframes fadeInUp': {
@@ -90,71 +91,74 @@ const StockCostReportPage = () => {
     0
   );
 
-  const handlePrint = () => {
-    const win = window.open('', '_blank', 'width=1000,height=700');
-    if (!win) { showSnackbar('Pop-up blocked – allow pop-ups and try again', 'warning'); return; }
-
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     const dateRange = dateFrom || dateTo
       ? `${dateFrom ? dayjs(dateFrom).format('DD/MM/YYYY') : '—'} to ${dateTo ? dayjs(dateTo).format('DD/MM/YYYY') : '—'}`
       : 'All Dates';
+    const pageW = doc.internal.pageSize.getWidth();
 
-    const rows = filtered.map((p, i) => {
+    // Title
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Stock Purchase Cost Report', pageW / 2, 14, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+    doc.text(`Chellamay House of Toys  |  Generated: ${dayjs().format('DD MMM YYYY, hh:mm A')}  |  Date Filter: ${dateRange}`, pageW / 2, 20, { align: 'center' });
+
+    // Summary row
+    doc.setTextColor(0);
+    const summaryY = 26;
+    const sw = (pageW - 20) / 4;
+    [
+      ['Products', String(totalProducts)],
+      ['Total Stock Qty', String(totalStockQty)],
+      ['Total Purchase Cost', `Rs.${totalPurchaseCost.toFixed(2)}`],
+      ['Total MRP Value', `Rs.${totalMRPValue.toFixed(2)}`],
+    ].forEach(([label, val], i) => {
+      const x = 10 + i * sw;
+      doc.setDrawColor(200);
+      doc.roundedRect(x, summaryY, sw - 2, 13, 1, 1, 'S');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.5);
+      doc.setTextColor(120);
+      doc.text(label.toUpperCase(), x + 2, summaryY + 5);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(30);
+      doc.text(val, x + 2, summaryY + 10.5);
+    });
+
+    // Table rows
+    const tableRows = filtered.map((p, i) => {
       const purchaseRate = Number(p.purchase_price) || 0;
       const qty = p.current_quantity ?? 0;
-      const totalCost = purchaseRate * qty;
-      return `<tr>
-        <td>${i + 1}</td>
-        <td>${esc(p.name)}</td>
-        <td>${esc(p.item_code || '—')}</td>
-        <td>${esc(p.categories?.name || '—')}</td>
-        <td style="text-align:right">₹${purchaseRate.toFixed(2)}</td>
-        <td style="text-align:center">${qty}</td>
-        <td style="text-align:right;font-weight:700">₹${totalCost.toFixed(2)}</td>
-      </tr>`;
-    }).join('');
+      return [i + 1, p.name, p.item_code || '—', p.categories?.name || '—', `Rs.${purchaseRate.toFixed(2)}`, qty, `Rs.${(purchaseRate * qty).toFixed(2)}`];
+    });
 
-    const html = `<!DOCTYPE html><html><head><title>Stock Cost Report</title>
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; font-size: 11px; color: #111; padding: 16px; }
-      h2 { text-align: center; font-size: 15px; margin-bottom: 4px; }
-      .sub { text-align: center; font-size: 10px; color: #555; margin-bottom: 12px; }
-      .summary { display: flex; gap: 12px; margin-bottom: 14px; }
-      .summary-card { flex: 1; border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px; }
-      .summary-card .label { font-size: 9px; color: #777; text-transform: uppercase; }
-      .summary-card .value { font-size: 14px; font-weight: 700; color: #111; }
-      table { width: 100%; border-collapse: collapse; }
-      th { background: #f3f4f6; padding: 6px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #ddd; }
-      td { padding: 5px 8px; border-bottom: 1px solid #eee; font-size: 10.5px; }
-      tr:hover td { background: #fafafa; }
-      .total-row td { font-weight: 700; border-top: 2px solid #111; background: #f9f9f9; }
-      @media print { @page { margin: 10mm; } }
-    </style></head><body>
-    <h2>Stock Purchase Cost Report</h2>
-    <div class="sub">Chellamay House of Toys &nbsp;|&nbsp; Generated: ${dayjs().format('DD MMM YYYY, hh:mm A')} &nbsp;|&nbsp; Date Filter: ${esc(dateRange)}</div>
-    <div class="summary">
-      <div class="summary-card"><div class="label">Products</div><div class="value">${totalProducts}</div></div>
-      <div class="summary-card"><div class="label">Total Stock Qty</div><div class="value">${totalStockQty}</div></div>
-      <div class="summary-card"><div class="label">Total Purchase Cost</div><div class="value">₹${totalPurchaseCost.toFixed(2)}</div></div>
-      <div class="summary-card"><div class="label">Total MRP Value</div><div class="value">₹${totalMRPValue.toFixed(2)}</div></div>
-    </div>
-    <table>
-      <thead><tr><th>#</th><th>Product Name</th><th>Item Code</th><th>Category</th><th style="text-align:right">Purchase Rate</th><th style="text-align:center">Stock Qty</th><th style="text-align:right">Total Cost</th></tr></thead>
-      <tbody>${rows}
-        <tr class="total-row">
-          <td colspan="5" style="text-align:right">Grand Total</td>
-          <td style="text-align:center">${totalStockQty}</td>
-          <td style="text-align:right">₹${totalPurchaseCost.toFixed(2)}</td>
-        </tr>
-      </tbody>
-    </table>
-    </body></html>`;
+    autoTable(doc, {
+      startY: summaryY + 17,
+      head: [['#', 'Product Name', 'Item Code', 'Category', 'Purchase Rate', 'Stock Qty', 'Total Cost']],
+      body: tableRows,
+      foot: [['', '', '', '', 'Grand Total', totalStockQty, `Rs.${totalPurchaseCost.toFixed(2)}`]],
+      tableWidth: 'auto',
+      styles: { fontSize: 8, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 }, overflow: 'linebreak' },
+      headStyles: { fillColor: [63, 81, 181], textColor: 255, fontStyle: 'bold', fontSize: 7.5, halign: 'center' },
+      footStyles: { fillColor: [240, 240, 240], textColor: 30, fontStyle: 'bold', fontSize: 8 },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 10 },
+        1: { halign: 'left',   cellWidth: 60 },
+        2: { halign: 'left',   cellWidth: 35 },
+        3: { halign: 'left',   cellWidth: 30 },
+        4: { halign: 'right',  cellWidth: 35 },
+        5: { halign: 'right',  cellWidth: 25 },
+        6: { halign: 'right',  cellWidth: 35, fontStyle: 'bold' },
+      },
+    });
 
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-    setTimeout(() => { win.print(); win.close(); }, 600);
-    showSnackbar('Report sent to printer');
+    doc.save(`Stock_Cost_Report_${dayjs().format('YYYYMMDD_HHmm')}.pdf`);
+    showSnackbar('PDF downloaded successfully');
   };
 
   if (!isAdmin) {
@@ -204,8 +208,8 @@ const StockCostReportPage = () => {
           </Box>
           <Button
             variant="contained"
-            startIcon={<PrintRoundedIcon />}
-            onClick={handlePrint}
+            startIcon={<DownloadRoundedIcon />}
+            onClick={handleDownloadPDF}
             disabled={filtered.length === 0}
             size="small"
             sx={{
@@ -219,7 +223,7 @@ const StockCostReportPage = () => {
               '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)', border: '1.5px solid rgba(255,255,255,0.15)' },
             }}
           >
-            Print Report
+            Download PDF
           </Button>
         </Box>
 
@@ -263,7 +267,7 @@ const StockCostReportPage = () => {
             overflow: 'hidden',
           }}
         >
-          {/* Filter Toolbar */}
+          {/* Filter Toolbars */}
           <Box sx={{
             px: { xs: 1.5, sm: 2.5 }, py: 1.8,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -360,6 +364,7 @@ const StockCostReportPage = () => {
                         fontWeight: 700, fontSize: '0.72rem', color: 'primary.dark',
                         whiteSpace: 'nowrap', py: 1.2,
                         letterSpacing: '0.04em', textTransform: 'uppercase',
+                        zIndex: 2,
                       }}
                     >
                       {h}
