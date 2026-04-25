@@ -32,36 +32,36 @@ const StickerPreview = ({ items }) => {
                 key={`${item.product.id}-${i}`}
                 style={{
                   width: '100%',
-                  aspectRatio: '35/27',
+                  aspectRatio: '35/22',
                   borderRadius: 6,
                   backgroundColor: '#fff',
                   fontFamily: 'Arial, sans-serif',
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
-                  padding: '4px 5px',
+                  padding: '4px 6px',
                   boxSizing: 'border-box',
                   boxShadow: 'none',
                 }}
               >
                 {/* Shop name header */}
-                <div style={{ fontSize: 7.5, fontWeight: 700, color: '#111', letterSpacing: 0.4, marginBottom: 3, textAlign: 'center', width: '100%' }}>செல்லமே</div>
+                <div style={{ fontSize: 7, fontWeight: 700, color: '#111', letterSpacing: 0.4, marginBottom: 2 }}>செல்லமே</div>
                 {/* Body: QR left | info right */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 10 }}>
                   <div style={{ flexShrink: 0 }}>
-                    <QRCodeSVG value={code} size={22} level="M" />
+                    <QRCodeSVG value={code} size={16} level="M" />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2 }}>
-                    <div style={{ fontSize: 7.5, fontWeight: 700, color: '#111', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: '#111', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {item.product.name}
                     </div>
-                    <div style={{ fontSize: 8, fontWeight: 900, color: '#000' }}>
+                    <div style={{ fontSize: 7, fontWeight: 900, color: '#000' }}>
                       MRP. {Math.round(item.product.mrp)}
                     </div>
                     <div style={{ fontSize: 9, color: '#333', fontFamily: 'monospace', fontWeight: 700 }}>
                       *{code}*
                     </div>
-                    <div style={{ fontSize: 6, color: '#333', fontWeight: 700 }}>{now}</div>
+                    <div style={{ fontSize: 5.5, color: '#333', fontWeight: 700 }}>{now}</div>
                   </div>
                 </div>
               </div>
@@ -111,24 +111,24 @@ const QRStickerPage = () => {
       })
     );
     const html = stickers.join('');
-    // 4-inch roll: 101.6mm wide, sticker 33.8mm × 27mm (3 per row, no gap)
+    // 4-inch roll: 101.6mm wide, sticker 35.8mm × 25mm (3 per row, no gap)
     const rowCount = Math.ceil(stickers.length / 3);
-    const pageHeightMm = rowCount * 27; // each row = 27mm, no gap
+    const pageHeightMm = rowCount * 25; // each row = 25mm, no gap
     const styles = `
-      @page { size: 101.6mm ${pageHeightMm}mm; margin: 0; }
+      @page { size: 103.6mm ${pageHeightMm}mm; margin: 0; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       html, body { font-family: Arial, sans-serif; background: #fff; width: 101.6mm; height: ${pageHeightMm}mm; overflow: hidden; }
-      .grid { display: grid; grid-template-columns: repeat(3, 33.8mm); gap: 0; width: 101.4mm; height: ${pageHeightMm}mm; }
-      .sticker { width: 33.8mm; height: 27mm; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1mm 1.2mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
-      .body { display: flex; align-items: center; justify-content: center; width: 100%; gap: 2pt; overflow: hidden; }
+      .grid { display: grid; grid-template-columns: repeat(3, 35.8mm); gap: 0; width: 101.4mm; height: ${pageHeightMm}mm; }
+      .sticker { width: 35.8mm; height: 25mm; overflow: hidden; display: flex; flex-direction: column; padding: 0.8mm 1mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
+      .body { display: flex; align-items: center; flex: 1; gap: 1.5pt; overflow: hidden; }
       .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-      .shop { font-size: 6pt; font-weight: 700; color: #111; letter-spacing: 0.3px; margin-bottom: 1pt; text-align: center; width: 100%; }
-      .qr svg { width: 13mm; height: 13mm; display: block; }
-      .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0.8pt; overflow: hidden; }
-      .pname { font-size: 5.5pt; font-weight: 700; color: #111; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-      .price { font-size: 7pt; font-weight: 900; color: #000; white-space: nowrap; }
-      .code { font-size: 6pt; font-weight: 900; color: #333; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .dt { font-size: 4.5pt; color: #333; font-weight: 700; }
+      .shop { font-size: 5.5pt; font-weight: 700; color: #111; letter-spacing: 0.2px; margin-bottom: 0.5pt; text-align: center; }
+      .qr svg { width: 10mm; height: 10mm; display: block; }
+      .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.3pt; overflow: hidden; }
+      .pname { font-size: 5pt; font-weight: 700; color: #111; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+      .price { font-size: 6pt; font-weight: 900; color: #000; white-space: nowrap; }
+      .code { font-size: 5.5pt; font-weight: 900; color: #333; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .dt { font-size: 4pt; color: #333; font-weight: 700; }
       @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     `;
     win.document.write('<!DOCTYPE html><html><head><title>Chellamay Toys Stickers</title><style>' + styles + '</style></head><body><div class="grid">' + html + '</div></body></html>');
