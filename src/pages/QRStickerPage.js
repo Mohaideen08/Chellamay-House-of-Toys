@@ -32,7 +32,7 @@ const StickerPreview = ({ items }) => {
                 key={`${item.product.id}-${i}`}
                 style={{
                   width: '100%',
-                  aspectRatio: '35.8/25',
+                  aspectRatio: '33.8/25',
                   borderRadius: 6,
                   backgroundColor: '#fff',
                   fontFamily: 'Arial, sans-serif',
@@ -41,7 +41,7 @@ const StickerPreview = ({ items }) => {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'stretch',
-                  padding: '3px 4px',
+                  padding: '6px 5px 3px 5px',
                   boxSizing: 'border-box',
                   boxShadow: 'none',
                 }}
@@ -119,15 +119,15 @@ const QRStickerPage = () => {
       @page { size: 101.6mm ${pageHeightMm}mm; margin: 0; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       html, body { font-family: Arial, sans-serif; background: #fff; width: 101.6mm; height: ${pageHeightMm}mm; overflow: hidden; }
-      .grid { display: grid; grid-template-columns: repeat(3, 35.8mm); gap: 2mm; width: 101.4mm; height: ${pageHeightMm}mm; }
-      .sticker { width: 35.8mm; height: 25mm; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: stretch; padding: 0.8mm 1mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
-      .body { display: flex; align-items: center; gap: 2.5pt; overflow: hidden; }
+      .grid { display: grid; grid-template-columns: repeat(3, 33.8mm); gap: 0; width: 101.4mm; height: ${pageHeightMm}mm; }
+      .sticker { width: 33.8mm; height: 25mm; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: stretch; padding: 1.5mm 1.2mm 0.8mm 1.2mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
+      .body { display: flex; align-items: center; gap: 2mm; overflow: hidden; }
       .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
       .shop { font-size: 5.5pt; font-weight: 700; color: #111; letter-spacing: 0.2px; margin-bottom: 0.5pt; text-align: center; }
       .qr svg { width: 12mm; height: 12mm; display: block; }
       .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.3pt; overflow: hidden; }
       .pname { font-size: 5pt; font-weight: 700; color: #111; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-      .price { font-size: 6pt; font-weight: 900; color: #000; white-space: nowrap; }
+      .price { font-size: 6pt; font-weight: 900; color: #000; white-space: normal; word-break: break-all; }
       .code { font-size: 5.5pt; font-weight: 900; color: #333; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .dt { font-size: 4pt; color: #333; font-weight: 700; }
       @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
