@@ -34,9 +34,7 @@ const EMPTY_FORM = {
 };
 
 const generateBarcode = (seq = 1) => {
-  const ts = Date.now().toString().slice(-4);
-  const num = String(seq).padStart(3, '0');
-  return `CHT${ts}${num}`;
+  return String(seq).padStart(6, '0');
 };
 
 const SECRET_CODE = '9876';
@@ -220,7 +218,7 @@ const ProductsPage = () => {
       name: form.name.trim(),
       category_id: form.category_id || null,
       barcode: form.barcode.trim() || null,
-      item_code: form.item_code.trim() || null,
+      item_code: form.item_code.trim() ? (editRow ? form.item_code.trim() : `${dayjs().format('MMYY')}${form.item_code.trim()}`) : null,
       hsn: form.hsn.trim() || null,
       mrp: parseFloat(form.mrp),
       purchase_price: form.purchase_price ? parseFloat(form.purchase_price) : null,
@@ -662,7 +660,7 @@ const ProductsPage = () => {
       >
         <DataGrid
           rows={filtered} columns={columns} loading={loading}
-          disableRowSelectionOnClick pageSizeOptions={[10, 25, 50]}
+          disableRowSelectionOnClick pageSizeOptions={[10, 25, 50, 100, { value: -1, label: 'All' }]}
           initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
           sx={{
             border: 'none',
