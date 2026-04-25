@@ -23,7 +23,7 @@ const StickerPreview = ({ items }) => {
   const now = dayjs().format('YYMMDD');
   return (
     <div style={{ padding: 14, background: '#e0e0e0' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
         {items.flatMap((item) =>
           Array.from({ length: item.qty }, (_, i) => {
             const code = item.product.barcode || item.product.item_code || String(item.product.id);
@@ -39,11 +39,11 @@ const StickerPreview = ({ items }) => {
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'center',
+                  justifyContent: 'flex-start',
                   padding: '5px 7px',
                   boxSizing: 'border-box',
                   boxShadow: 'none',
-                  gap: 3,
+                  gap: 1,
                 }}
               >
                 {/* Shop name — full width top row */}
@@ -57,7 +57,7 @@ const StickerPreview = ({ items }) => {
                     <div style={{ fontSize: 8, fontWeight: 700, color: '#111', lineHeight: 1.25, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {item.product.name}
                     </div>
-                    <div style={{ fontSize: 10, fontWeight: 900, color: '#000' }}>
+                    <div style={{ fontSize: 9, fontWeight: 900, color: '#000', wordBreak: 'break-all' }}>
                       MRP.{Math.round(item.product.mrp)}
                     </div>
                     <div style={{ fontSize: 8, color: '#222', fontFamily: 'monospace', fontWeight: 800 }}>
@@ -120,15 +120,15 @@ const QRStickerPage = () => {
       @page { size: 101.6mm ${pageHeightMm}mm; margin: 0; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       html, body { font-family: Arial, sans-serif; background: #fff; width: 101.6mm; height: ${pageHeightMm}mm; overflow: hidden; }
-      .grid { display: grid; grid-template-columns: repeat(3, 33.8mm); gap: 0; width: 101.4mm; height: ${pageHeightMm}mm; }
-      .sticker { width: 33.8mm; height: 27mm; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 1mm 1.5mm; gap: 1pt; background: #fff; page-break-inside: avoid; break-inside: avoid; }
+      .grid { display: grid; grid-template-columns: repeat(3, 33.8mm); gap: 1mm; width: 101.4mm; height: ${pageHeightMm}mm; }
+      .sticker { width: 33.8mm; height: 27mm; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; padding: 1mm 1.5mm; gap: 0.3pt; background: #fff; page-break-inside: avoid; break-inside: avoid; }
       .shop { font-size: 7pt; font-weight: 800; color: #111; letter-spacing: 0.3px; width: 100%; }
       .body { display: flex; align-items: center; gap: 2mm; flex: 1; overflow: hidden; }
       .qr { flex-shrink: 0; }
       .qr svg { width: 14mm; height: 14mm; display: block; }
       .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.8pt; overflow: hidden; }
       .pname { font-size: 6pt; font-weight: 700; color: #111; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-      .price { font-size: 8.5pt; font-weight: 900; color: #000; white-space: nowrap; }
+      .price { font-size: 7pt; font-weight: 900; color: #000; white-space: normal; word-break: break-all; }
       .code { font-size: 6pt; font-weight: 900; color: #222; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .dt { font-size: 5pt; color: #333; font-weight: 700; }
       @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
