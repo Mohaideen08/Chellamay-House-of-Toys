@@ -32,33 +32,34 @@ const StickerPreview = ({ items }) => {
                 key={`${item.product.id}-${i}`}
                 style={{
                   width: '100%',
-                  aspectRatio: '35/22',
+                  aspectRatio: '35.8/25',
                   borderRadius: 6,
                   backgroundColor: '#fff',
                   fontFamily: 'Arial, sans-serif',
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
-                  padding: '4px 6px',
+                  justifyContent: 'center',
+                  alignItems: 'stretch',
+                  padding: '3px 4px',
                   boxSizing: 'border-box',
                   boxShadow: 'none',
                 }}
               >
-                {/* Shop name header */}
-                <div style={{ fontSize: 7, fontWeight: 700, color: '#111', letterSpacing: 0.4, marginBottom: 2 }}>செல்லமே</div>
-                {/* Body: QR left | info right */}
-                <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 10 }}>
-                  <div style={{ flexShrink: 0 }}>
-                    <QRCodeSVG value={code} size={16} level="M" />
+                {/* Body: QR column (shop name + QR) left | info right */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: '#111', letterSpacing: 0.2, marginBottom: 1, textAlign: 'center' }}>செல்லமே</div>
+                    <QRCodeSVG value={code} size={45} level="M" />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
-                    <div style={{ fontSize: 7, fontWeight: 700, color: '#111', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1 }}>
+                    <div style={{ fontSize: 6.5, fontWeight: 700, color: '#111', lineHeight: 1.2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {item.product.name}
                     </div>
-                    <div style={{ fontSize: 7, fontWeight: 900, color: '#000' }}>
-                      MRP. {Math.round(item.product.mrp)}
+                    <div style={{ fontSize: 8, fontWeight: 900, color: '#000', wordBreak: 'break-all' }}>
+                      MRP.{Math.round(item.product.mrp)}
                     </div>
-                    <div style={{ fontSize: 9, color: '#333', fontFamily: 'monospace', fontWeight: 700 }}>
+                    <div style={{ fontSize: 7, color: '#222', fontFamily: 'monospace', fontWeight: 900, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       *{code}*
                     </div>
                     <div style={{ fontSize: 5.5, color: '#333', fontWeight: 700 }}>{now}</div>
@@ -119,8 +120,8 @@ const QRStickerPage = () => {
       * { box-sizing: border-box; margin: 0; padding: 0; }
       html, body { font-family: Arial, sans-serif; background: #fff; width: 101.6mm; height: ${pageHeightMm}mm; overflow: hidden; }
       .grid { display: grid; grid-template-columns: repeat(3, 35.8mm); gap: 2mm; width: 101.4mm; height: ${pageHeightMm}mm; }
-      .sticker { width: 35.8mm; height: 25mm; overflow: hidden; display: flex; flex-direction: column; padding: 0.8mm 1mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
-      .body { display: flex; align-items: center; flex: 1; gap: 2.5pt; overflow: hidden; }
+      .sticker { width: 35.8mm; height: 25mm; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: stretch; padding: 0.8mm 1mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
+      .body { display: flex; align-items: center; gap: 2.5pt; overflow: hidden; }
       .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
       .shop { font-size: 5.5pt; font-weight: 700; color: #111; letter-spacing: 0.2px; margin-bottom: 0.5pt; text-align: center; }
       .qr svg { width: 12mm; height: 12mm; display: block; }
