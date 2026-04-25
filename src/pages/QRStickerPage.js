@@ -118,7 +118,7 @@ const QRStickerPage = () => {
       @page { size: 101.6mm ${pageHeightMm}mm; margin: 0; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       html, body { font-family: Arial, sans-serif; background: #fff; width: 101.6mm; height: ${pageHeightMm}mm; overflow: hidden; }
-      .grid { display: grid; grid-template-columns: repeat(3, 35.8mm); gap: 2; width: 101.4mm; height: ${pageHeightMm}mm; }
+      .grid { display: grid; grid-template-columns: repeat(3, 35.8mm); gap: 2mm; width: 101.4mm; height: ${pageHeightMm}mm; }
       .sticker { width: 35.8mm; height: 25mm; overflow: hidden; display: flex; flex-direction: column; padding: 0.8mm 1mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
       .body { display: flex; align-items: center; flex: 1; gap: 2.5pt; overflow: hidden; }
       .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
