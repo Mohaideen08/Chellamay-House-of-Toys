@@ -360,7 +360,8 @@ const StockCostReportPage = () => {
                       key={h}
                       align={['Purchase Rate (₹)', 'Stock Qty', 'Total Cost (₹)'].includes(h) ? 'right' : h === '#' ? 'center' : 'left'}
                       sx={{
-                        background: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.09) 0%, rgba(var(--color-secondary-rgb),0.09) 100%)',
+                        backgroundColor: '#fff',
+                        backgroundImage: 'linear-gradient(135deg, rgba(var(--color-primary-rgb),0.09) 0%, rgba(var(--color-secondary-rgb),0.09) 100%)',
                         fontWeight: 700, fontSize: '0.72rem', color: 'primary.dark',
                         whiteSpace: 'nowrap', py: 1.2,
                         letterSpacing: '0.04em', textTransform: 'uppercase',
