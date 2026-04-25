@@ -39,8 +39,6 @@ const StickerPreview = ({ items }) => {
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   padding: '4px 5px',
                   boxSizing: 'border-box',
                   boxShadow: 'none',
