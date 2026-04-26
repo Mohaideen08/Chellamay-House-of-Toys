@@ -144,8 +144,6 @@ const SalesReportPage = () => {
 
   const handlePrint = () => {
     if (!reprintSale) return;
-    const win = window.open('', '_blank', 'width=420,height=700');
-    if (!win) return;
     const net = reprintSale.net_amount;
     const sub = reprintSale.total_amount;
     const totalGst = Math.max(0, Number(net) - Number(sub));
@@ -219,10 +217,21 @@ const SalesReportPage = () => {
       + hr
       + '<div class="c b">* No Warranty - No Exchange *</div>'
       + '</div>';
-    win.document.write('<!DOCTYPE html><html><head><title>' + esc(reprintSale.bill_number) + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
-    win.document.close();
-    win.focus();
-    setTimeout(() => { win.print(); win.close(); }, 600);
+
+    // Use a hidden iframe so mobile browsers (Android/iOS) don't block it as a popup.
+    const frameId = '__thermal_print_frame__';
+    let iframe = document.getElementById(frameId);
+    if (iframe) iframe.remove();
+    iframe = document.createElement('iframe');
+    iframe.id = frameId;
+    iframe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none;visibility:hidden;';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write('<!DOCTYPE html><html><head><title>' + esc(reprintSale.bill_number) + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
+    doc.close();
+    iframe.contentWindow.onafterprint = () => { iframe.remove(); };
+    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 600);
   };
 
   const handleDownloadPDF = async (sale) => {
