@@ -253,7 +253,6 @@ const SalesReportPage = () => {
     const nl = () => b.push(LF);
     const dash = () => { txt('------------------------------------------------'); nl(); };
     const center = () => cmd(ESC, 0x61, 1);
-    const left = () => cmd(ESC, 0x61, 0);
     const bold = (on) => cmd(ESC, 0x45, on ? 1 : 0);
     const fontB = (on) => cmd(ESC, 0x4D, on ? 0x01 : 0x00);
     const dblSize = (on) => cmd(ESC, 0x21, on ? 0x30 : 0x00);
@@ -272,7 +271,7 @@ const SalesReportPage = () => {
     dash();
     bold(true); txt('TaxInvoice'); nl(); bold(false);
     dash();
-    left();
+    center();
     txt('BillNo: ' + reprintSale.bill_number); nl();
     txt('Date  : ' + created.format('DD-MM-YYYY') + '  ' + created.format('hh:mm A')); nl();
     if (reprintSale.customer_name) { txt('Name  : ' + reprintSale.customer_name); nl(); }
