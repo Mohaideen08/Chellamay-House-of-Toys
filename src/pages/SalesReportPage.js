@@ -278,7 +278,7 @@ const SalesReportPage = () => {
     if (reprintSale.customer_name) { txt('Name  : ' + reprintSale.customer_name); nl(); }
     if (reprintSale.customer_phone) { txt('Ph    : ' + reprintSale.customer_phone); nl(); }
     dash();
-    bold(true);
+    center(); bold(true);
     txt(col('Item', 20) + col('Q', 4, true) + col('MRP', 8, true) + col('Disc', 6, true) + col('Amt', 10, true)); nl();
     bold(false);
     dash();
