@@ -486,7 +486,6 @@ const BillingPage = () => {
     const nl = () => b.push(LF);
     const dash = () => { txt('------------------------------------------------'); nl(); };
     const center = () => cmd(ESC, 0x61, 1);
-    const left = () => cmd(ESC, 0x61, 0);
     const bold = (on) => cmd(ESC, 0x45, on ? 1 : 0);
     const fontB = (on) => cmd(ESC, 0x4D, on ? 0x01 : 0x00);
     const dblSize = (on) => cmd(ESC, 0x21, on ? 0x30 : 0x00);
