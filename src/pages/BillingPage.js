@@ -512,7 +512,7 @@ const BillingPage = () => {
     if (customerPhone) { txt('Ph    : ' + customerPhone); nl(); }
     if (userBranchName) { txt('Branch: ' + userBranchName); nl(); }
     dash();
-    bold(true);
+    center(); bold(true);
     txt(col('Item', 20) + col('Q', 4, true) + col('MRP', 8, true) + col('Disc', 6, true) + col('Amt', 10, true)); nl();
     bold(false);
     dash();
