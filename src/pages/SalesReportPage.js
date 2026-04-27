@@ -234,6 +234,82 @@ const SalesReportPage = () => {
     setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 600);
   };
 
+  /* ── Direct ESC/POS print via RawBT (Android Bluetooth) ── */
+  const handlePrintRawBT = () => {
+    if (!reprintSale) return;
+    const net = Number(reprintSale.net_amount);
+    const sub = Number(reprintSale.total_amount);
+    const totalGst = Math.max(0, net - sub);
+    const cgst = totalGst / 2;
+    const sgst = totalGst / 2;
+    const created = dayjs(reprintSale.created_at);
+    const totalDiscount = reprintItems.reduce((s, i) => s + Number(i.discount || 0), 0);
+    const totalQty = reprintItems.reduce((s, i) => s + i.quantity, 0);
+
+    const ESC = 0x1B, GS = 0x1D, LF = 0x0A;
+    const b = [];
+    const cmd = (...v) => v.forEach(x => b.push(x));
+    const txt = (s) => { for (let i = 0; i < s.length; i++) b.push(s.charCodeAt(i) & 0xFF); };
+    const nl = () => b.push(LF);
+    const dash = () => { txt('----------------------------------------'); nl(); };
+    const center = () => cmd(ESC, 0x61, 1);
+    const left = () => cmd(ESC, 0x61, 0);
+    const bold = (on) => cmd(ESC, 0x45, on ? 1 : 0);
+    const dblSize = (on) => cmd(ESC, 0x21, on ? 0x30 : 0x00);
+    const cut = () => cmd(GS, 0x56, 0x42, 0x00);
+    const col = (s, n, right = false) => { const t = String(s).substring(0, n); return right ? t.padStart(n) : t.padEnd(n); };
+
+    cmd(ESC, 0x40); // init
+    center(); bold(true);
+    txt('CHELLAMAY HOUSE OF TOYS'); nl();
+    bold(false);
+    txt('27 AMMAN SANNATHI,'); nl();
+    txt('TENKASI-627811'); nl();
+    txt('Ph: 8883509501/8680086899'); nl();
+    txt('GSTIN: 33BQNPP8756L1ZY'); nl();
+    dash();
+    bold(true); txt('         TaxInvoice'); nl(); bold(false);
+    dash();
+    left();
+    txt('BillNo: ' + reprintSale.bill_number); nl();
+    txt('Date  : ' + created.format('DD-MM-YYYY') + '  ' + created.format('hh:mm A')); nl();
+    if (reprintSale.customer_name) { txt('Name  : ' + reprintSale.customer_name); nl(); }
+    if (reprintSale.customer_phone) { txt('Ph    : ' + reprintSale.customer_phone); nl(); }
+    dash();
+    bold(true);
+    txt(col('Item', 18) + col('Q', 3, true) + col('MRP', 6, true) + col('Disc', 5, true) + col('Amt', 8, true)); nl();
+    bold(false);
+    dash();
+    reprintItems.forEach(item => {
+      txt(
+        col(item.product?.name ?? '', 18) +
+        col(item.quantity, 3, true) +
+        col(Number(item.mrp).toFixed(0), 6, true) +
+        col(Number(item.discount || 0).toFixed(0), 5, true) +
+        col(Number(item.total).toFixed(2), 8, true)
+      ); nl();
+    });
+    dash();
+    txt(col('Items:' + reprintItems.length + ' Qty:' + totalQty, 22) + col(sub.toFixed(2), 18, true)); nl();
+    dash();
+    txt(col('TaxableAmt', 14) + col('CGST', 13, true) + col('SGST', 13, true)); nl();
+    txt(col(sub.toFixed(2), 14) + col(cgst.toFixed(2), 13, true) + col(sgst.toFixed(2), 13, true)); nl();
+    dash();
+    if (totalDiscount > 0) { txt('Discount : -Rs.' + totalDiscount.toFixed(2)); nl(); }
+    if (totalGst > 0) { txt('Total GST:  Rs.' + totalGst.toFixed(2)); nl(); dash(); }
+    bold(true); dblSize(true);
+    txt('Total:Rs.' + net.toFixed(2)); nl();
+    dblSize(false); bold(false);
+    dash();
+    center(); txt('* No Warranty - No Exchange *'); nl();
+    nl(); nl(); nl();
+    cut();
+
+    const uint8 = new Uint8Array(b);
+    let bin = ''; uint8.forEach(x => bin += String.fromCharCode(x));
+    window.location.href = 'rawbt:base64,' + btoa(bin);
+  };
+
   const handleDownloadPDF = async (sale) => {
     const { data: items } = await supabase
       .from('sale_items')
@@ -773,22 +849,34 @@ const SalesReportPage = () => {
             />
           )}
         </DialogContent>
-        <DialogActions sx={{ px: 2.5, pb: 2.5, gap: 1.5, bgcolor: '#FAFBFF' }}>
+        <DialogActions sx={{ px: 2.5, pb: 2.5, flexDirection: 'column', gap: 1, bgcolor: '#FAFBFF' }}>
+          <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
+            <Button
+              variant="outlined"
+              onClick={closeReprint}
+              sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha(theme.palette.primary.main, 0.5), color: 'primary.main', '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) } }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<PrintRoundedIcon />}
+              onClick={handlePrint}
+              disabled={reprintLoading}
+              sx={{ flex: 1, borderRadius: 2.5, background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` } }}
+            >
+              Print
+            </Button>
+          </Box>
           <Button
             variant="outlined"
-            onClick={closeReprint}
-            sx={{ flex: 1, borderRadius: 2.5, borderColor: alpha(theme.palette.primary.main, 0.5), color: 'primary.main', '&:hover': { bordercolor: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) } }}
-          >
-            Close
-          </Button>
-          <Button
-            variant="contained"
+            fullWidth
             startIcon={<PrintRoundedIcon />}
-            onClick={handlePrint}
+            onClick={handlePrintRawBT}
             disabled={reprintLoading}
-            sx={{ flex: 1, borderRadius: 2.5, background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` } }}
+            sx={{ borderRadius: 2.5, borderColor: '#22C55E', color: '#16A34A', fontWeight: 700, '&:hover': { bgcolor: 'rgba(34,197,94,0.06)', borderColor: '#16A34A' } }}
           >
-            Print
+            Direct Print (RawBT – Bluetooth)
           </Button>
         </DialogActions>
       </Dialog>
