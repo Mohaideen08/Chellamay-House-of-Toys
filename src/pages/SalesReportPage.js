@@ -272,7 +272,7 @@ const SalesReportPage = () => {
     dash();
     bold(true); txt('TaxInvoice'); nl(); bold(false);
     dash();
-    left();
+    center();
     txt('BillNo: ' + reprintSale.bill_number); nl();
     txt('Date  : ' + created.format('DD-MM-YYYY') + '  ' + created.format('hh:mm A')); nl();
     if (reprintSale.customer_name) { txt('Name  : ' + reprintSale.customer_name); nl(); }

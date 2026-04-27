@@ -505,7 +505,7 @@ const BillingPage = () => {
     dash();
     bold(true); txt('TaxInvoice'); nl(); bold(false);
     dash();
-    left();
+    center();
     txt('BillNo: ' + billNumber); nl();
     txt('Date  : ' + now.format('DD-MM-YYYY') + '  ' + now.format('hh:mm A')); nl();
     if (customerName) { txt('Name  : ' + customerName); nl(); }
