@@ -251,7 +251,7 @@ const SalesReportPage = () => {
     const cmd = (...v) => v.forEach(x => b.push(x));
     const txt = (s) => { for (let i = 0; i < s.length; i++) b.push(s.charCodeAt(i) & 0xFF); };
     const nl = () => b.push(LF);
-    const dash = () => { txt('------------------------------------------'); nl(); };
+    const dash = () => { txt('------------------------------------------------'); nl(); };
     const center = () => cmd(ESC, 0x61, 1);
     const left = () => cmd(ESC, 0x61, 0);
     const bold = (on) => cmd(ESC, 0x45, on ? 1 : 0);
@@ -261,16 +261,16 @@ const SalesReportPage = () => {
     const col = (s, n, right = false) => { const t = String(s).substring(0, n); return right ? t.padStart(n) : t.padEnd(n); };
 
     cmd(ESC, 0x40); // init
-    fontB(true); // Font B – smaller chars for 3-inch paper
     center(); bold(true);
-    txt('CHELLAMAY HOUSE OF TOYS'); nl();
+    txt('CHELLAMAY HOUSE OF TOYS'); nl(); // Font A – larger for shop name
     bold(false);
+    fontB(true); // Font B for rest – smaller, fills 3-inch paper
     txt('27 AMMAN SANNATHI,'); nl();
     txt('TENKASI-627811'); nl();
     txt('Ph: 8883509501/8680086899'); nl();
     txt('GSTIN: 33BQNPP8756L1ZY'); nl();
     dash();
-    bold(true); txt('           TaxInvoice'); nl(); bold(false);
+    bold(true); txt('TaxInvoice'); nl(); bold(false);
     dash();
     left();
     txt('BillNo: ' + reprintSale.bill_number); nl();
@@ -279,23 +279,23 @@ const SalesReportPage = () => {
     if (reprintSale.customer_phone) { txt('Ph    : ' + reprintSale.customer_phone); nl(); }
     dash();
     bold(true);
-    txt(col('Item', 18) + col('Q', 3, true) + col('MRP', 7, true) + col('D', 5, true) + col('Amt', 9, true)); nl();
+    txt(col('Item', 20) + col('Q', 4, true) + col('MRP', 8, true) + col('Disc', 6, true) + col('Amt', 10, true)); nl();
     bold(false);
     dash();
     reprintItems.forEach(item => {
       txt(
-        col(item.product?.name ?? '', 18) +
-        col(item.quantity, 3, true) +
-        col(Number(item.mrp).toFixed(0), 7, true) +
-        col(Number(item.discount || 0).toFixed(0), 5, true) +
-        col(Number(item.total).toFixed(2), 9, true)
+        col(item.product?.name ?? '', 20) +
+        col(item.quantity, 4, true) +
+        col(Number(item.mrp).toFixed(0), 8, true) +
+        col(Number(item.discount || 0).toFixed(0), 6, true) +
+        col(Number(item.total).toFixed(2), 10, true)
       ); nl();
     });
     dash();
-    txt(col('Items:' + reprintItems.length + ' Qty:' + totalQty, 24) + col(sub.toFixed(2), 18, true)); nl();
+    txt(col('Items:' + reprintItems.length + ' Qty:' + totalQty, 28) + col(sub.toFixed(2), 20, true)); nl();
     dash();
-    txt(col('TaxableAmt', 14) + col('CGST', 14, true) + col('SGST', 14, true)); nl();
-    txt(col(sub.toFixed(2), 14) + col(cgst.toFixed(2), 14, true) + col(sgst.toFixed(2), 14, true)); nl();
+    txt(col('TaxableAmt', 16) + col('CGST', 16, true) + col('SGST', 16, true)); nl();
+    txt(col(sub.toFixed(2), 16) + col(cgst.toFixed(2), 16, true) + col(sgst.toFixed(2), 16, true)); nl();
     dash();
     if (totalDiscount > 0) { txt('Discount : -Rs.' + totalDiscount.toFixed(2)); nl(); }
     if (totalGst > 0) { txt('Total GST:  Rs.' + totalGst.toFixed(2)); nl(); dash(); }
