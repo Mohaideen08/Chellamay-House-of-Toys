@@ -17,7 +17,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { supabase } from '../services/supabase';
 import { useSnackbar } from '../context/SnackbarContext';
 import { useAuth } from '../context/AuthContext';
-import { esc } from '../utils/sanitize';
+
 import dayjs from 'dayjs';
 
 const fadeInUp = (delay = 0) => ({
@@ -240,92 +240,6 @@ const BillingPage = () => {
       generateBillNumber(0, userBranchName, userBranchId).then(bn => updateBill({ billNumber: bn }));
     }
   }, [safeTab]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handlePrint = useCallback(() => {
-    const win = window.open('', '_blank', 'width=420,height=700');
-    if (!win) { showSnackbar('Pop-up blocked \u2013 allow pop-ups and try again', 'warning'); return; }
-    const snapSubtotal = billItems.reduce((s, i) => s + i.total, 0);
-    const totalDiscount = billItems.reduce((s, i) => s + Number(i.discount || 0), 0);
-    const gstRate = Number(gstPercent) || 0;
-    const halfGst = gstRate / 2;
-    const cgstAmt = snapSubtotal * halfGst / 100;
-    const sgstAmt = cgstAmt;
-    const totalGst = cgstAmt + sgstAmt;
-    const snapNet = snapSubtotal + totalGst;
-    const now = dayjs();
-    const snapDate = now.format('DD-MM-YYYY');
-    const snapTime = now.format('hh:mm:ss A');
-    const totalItems = billItems.length;
-    const totalQty = billItems.reduce((s, i) => s + i.quantity, 0);
-    const hr = '<hr style="border:none;border-top:1px dashed #000;margin:3px 0">';
-    const itemRows = billItems.map((item) => {
-      return '<tr>'
-        + '<td style="text-align:left;padding:2px 0;overflow:hidden;white-space:nowrap;max-width:100px">' + esc(item.product?.name ?? '') + '</td>'
-        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + esc(item.quantity) + '</td>'
-        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.mrp).toFixed(0) + '</td>'
-        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.discount || 0).toFixed(0) + '</td>'
-        + '<td style="text-align:right;padding:2px 0;white-space:nowrap">' + Number(item.total).toFixed(2) + '</td>'
-        + '</tr>';
-    }).join('');
-    const styles = '* { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; font-weight: 700 !important; }'
-      + 'body { font-family: "Courier New", Courier, monospace; font-size: 12px; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; line-height: 1.8; }'
-      + '.receipt { max-width: 320px; margin: auto; padding: 16px 6px; color: #000; }'
-      + '.c { text-align: center; } .b { font-weight: 900 !important; }'
-      + 'table { width: 100%; border-collapse: collapse; }'
-      + 'td, th { padding: 4px 2px !important; }'
-      + '@page { margin: 0.5cm; size: 80mm auto; }';
-    const html = '<div class="receipt">'
-      + '<div class="c b" style="font-size:14px">CHELLAMAY HOUSE OF TOYS</div>'
-      + '<div class="c">27 AMMAN SANNATHI,</div>'
-      + '<div class="c">TENKASI - 627811</div>'
-      + '<div class="c">Ph: 8883509501 / 8680086899</div>'
-      + '<div class="c">GSTIN: 33BQNPP8756L1ZY</div>'
-      + hr
-      + '<div class="c b" style="font-size:13px;letter-spacing:2px">TaxInvoice</div>'
-      + hr
-      + '<div style="display:flex;justify-content:space-between"><span>BillNo: ' + billNumber + '</span><span>Time: ' + snapTime + '</span></div>'
-      + '<div>Date: ' + snapDate + '</div>'
-      + '<div>Name: ' + esc(customerName) + '</div>'
-      + (customerPhone ? '<div>Ph: ' + esc(customerPhone) + '</div>' : '')
-      + (userBranchName ? '<div>Branch: ' + userBranchName + '</div>' : '')
-      + hr
-      + '<table style="table-layout:fixed;width:100%">'
-      + '<colgroup><col><col style="width:18px"><col style="width:48px"><col style="width:32px"><col style="width:58px"></colgroup>'
-      + '<thead><tr>'
-      + '<th style="text-align:left;border-bottom:1px dashed #000;padding:2px 0">Item</th>'
-      + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 2px">Q</th>'
-      + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 2px">MRP</th>'
-      + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 2px">Disc</th>'
-      + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 0">Amount</th>'
-      + '</tr></thead><tbody>' + itemRows + '</tbody></table>'
-      + hr
-      + '<div style="display:flex;justify-content:space-between">'
-      + '<span>Items :' + totalItems + '</span>'
-      + '<span>Qty :' + totalQty + '</span>'
-      + '<span>Amt :' + snapSubtotal.toFixed(2) + '</span></div>'
-      + hr
-      + '<table><thead><tr>'
-      + '<th style="text-align:center;border-bottom:1px dashed #000;padding:2px 0">TaxableAmt</th>'
-      + '<th style="text-align:center;border-bottom:1px dashed #000;padding:2px 0">CGST</th>'
-      + '<th style="text-align:center;border-bottom:1px dashed #000;padding:2px 0">SGST</th>'
-      + '</tr></thead><tbody><tr>'
-      + '<td style="text-align:center;padding:2px 0">' + snapSubtotal.toFixed(2) + '</td>'
-        + '<td style="text-align:center;padding:2px 0">' + cgstAmt.toFixed(2) + (gstRate > 0 ? ' (' + halfGst + '%)' : '') + '</td>'
-        + '<td style="text-align:center;padding:2px 0">' + sgstAmt.toFixed(2) + (gstRate > 0 ? ' (' + halfGst + '%)' : '') + '</td>'
-      + '</tr></tbody></table>'
-      + hr
-      + (totalDiscount > 0 ? '<div style="display:flex;justify-content:space-between"><span>Total Discount :</span><span>-₹' + totalDiscount.toFixed(2) + '</span></div>' + hr : '')
-      + (gstRate > 0 ? '<div style="display:flex;justify-content:space-between"><span>Total GST (' + gstRate + '%):</span><span>₹' + totalGst.toFixed(2) + '</span></div>' + hr : '')
-      + '<div class="c b" style="font-size:18px">Total :₹' + snapNet.toFixed(2) + '</div>'
-      + hr
-      + '<div class="c b">* No Warranty - No Exchange *</div>'
-      + '</div>';
-    win.document.write('<!DOCTYPE html><html><head><title>' + esc(billNumber) + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
-    win.document.close();
-    win.focus();
-    setTimeout(() => { win.print(); win.close(); }, 600);
-    showSnackbar('Bill printed successfully');
-  }, [billItems, billNumber, gstPercent, userBranchName, customerName, customerPhone, showSnackbar]);
 
   const fetchProducts = useCallback(async (branchId) => {
     const { data: prods } = await supabase
@@ -556,12 +470,88 @@ const BillingPage = () => {
     setPreviewOpen(true);
   };
 
+  /* ── Direct ESC/POS print via RawBT (Android Bluetooth) ── */
+  const handlePrintRawBT = useCallback(() => {
+    const net = netAmount;
+    const sub = subtotal;
+    const now = dayjs();
+    const totalItemsCount = billItems.length;
+    const totalQty = billItems.reduce((s, i) => s + i.quantity, 0);
+    const totalDiscountAmt = billItems.reduce((s, i) => s + Number(i.discount || 0), 0);
+
+    const ESC = 0x1B, GS = 0x1D, LF = 0x0A;
+    const b = [];
+    const cmd = (...v) => v.forEach(x => b.push(x));
+    const txt = (s) => { for (let i = 0; i < s.length; i++) b.push(s.charCodeAt(i) & 0xFF); };
+    const nl = () => b.push(LF);
+    const dash = () => { txt('------------------------------------------'); nl(); };
+    const center = () => cmd(ESC, 0x61, 1);
+    const left = () => cmd(ESC, 0x61, 0);
+    const bold = (on) => cmd(ESC, 0x45, on ? 1 : 0);
+    const fontB = (on) => cmd(ESC, 0x4D, on ? 0x01 : 0x00);
+    const dblSize = (on) => cmd(ESC, 0x21, on ? 0x30 : 0x00);
+    const cut = () => cmd(GS, 0x56, 0x42, 0x00);
+    const col = (s, n, right = false) => { const t = String(s).substring(0, n); return right ? t.padStart(n) : t.padEnd(n); };
+
+    cmd(ESC, 0x40); // init
+    fontB(true); // Font B – smaller chars for 3-inch paper
+    center(); bold(true);
+    txt('CHELLAMAY HOUSE OF TOYS'); nl();
+    bold(false);
+    txt('27 AMMAN SANNATHI,'); nl();
+    txt('TENKASI-627811'); nl();
+    txt('Ph: 8883509501/8680086899'); nl();
+    txt('GSTIN: 33BQNPP8756L1ZY'); nl();
+    dash();
+    bold(true); txt('           TaxInvoice'); nl(); bold(false);
+    dash();
+    left();
+    txt('BillNo: ' + billNumber); nl();
+    txt('Date  : ' + now.format('DD-MM-YYYY') + '  ' + now.format('hh:mm A')); nl();
+    if (customerName) { txt('Name  : ' + customerName); nl(); }
+    if (customerPhone) { txt('Ph    : ' + customerPhone); nl(); }
+    if (userBranchName) { txt('Branch: ' + userBranchName); nl(); }
+    dash();
+    bold(true);
+    txt(col('Item', 18) + col('Q', 3, true) + col('MRP', 7, true) + col('D', 5, true) + col('Amt', 9, true)); nl();
+    bold(false);
+    dash();
+    billItems.forEach(item => {
+      txt(
+        col(item.product?.name ?? '', 18) +
+        col(item.quantity, 3, true) +
+        col(Number(item.mrp).toFixed(0), 7, true) +
+        col(Number(item.discount || 0).toFixed(0), 5, true) +
+        col(Number(item.total).toFixed(2), 9, true)
+      ); nl();
+    });
+    dash();
+    txt(col('Items:' + totalItemsCount + ' Qty:' + totalQty, 24) + col(sub.toFixed(2), 18, true)); nl();
+    dash();
+    txt(col('TaxableAmt', 14) + col('CGST', 14, true) + col('SGST', 14, true)); nl();
+    txt(col(sub.toFixed(2), 14) + col(cgstAmt.toFixed(2), 14, true) + col(sgstAmt.toFixed(2), 14, true)); nl();
+    dash();
+    if (totalDiscountAmt > 0) { txt('Discount : -Rs.' + totalDiscountAmt.toFixed(2)); nl(); }
+    if (totalGst > 0) { txt('Total GST:  Rs.' + totalGst.toFixed(2)); nl(); dash(); }
+    fontB(false); bold(true); dblSize(true);
+    txt('Total:Rs.' + net.toFixed(2)); nl();
+    dblSize(false); bold(false); fontB(true);
+    dash();
+    center(); txt('* No Warranty - No Exchange *'); nl();
+    nl(); nl(); nl();
+    cut();
+
+    const uint8 = new Uint8Array(b);
+    let bin = ''; uint8.forEach(x => bin += String.fromCharCode(x));
+    window.location.href = 'rawbt:base64,' + btoa(bin);
+  }, [billItems, billNumber, netAmount, subtotal, totalGst, cgstAmt, sgstAmt, customerName, customerPhone, userBranchName]);
+
   // Called when user clicks "Print Bill" inside the preview dialog
   const handleSaveAndPrint = async () => {
     // If bill was already saved (e.g. user reopened preview), just print
     if (saved) {
       setPreviewOpen(false);
-      setTimeout(handlePrint, 100);
+      setTimeout(handlePrintRawBT, 100);
       return;
     }
     setSaving(true);
@@ -648,7 +638,7 @@ const BillingPage = () => {
 
     // Print, then close this tab (or reset if it's the only one)
     setTimeout(() => {
-      handlePrint();
+      handlePrintRawBT();
       setBills(prev => {
         if (prev.length === 1) {
           // only tab — reset to empty, generate a fresh bill number
@@ -959,7 +949,7 @@ const BillingPage = () => {
               <Button
                 variant="contained"
                 startIcon={<PrintRoundedIcon />}
-                onClick={handlePrint}
+                onClick={handlePrintRawBT}
                 sx={{
                   background: 'rgba(255,255,255,0.2)',
                   color: '#fff',
