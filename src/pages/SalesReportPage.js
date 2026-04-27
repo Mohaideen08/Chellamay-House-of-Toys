@@ -19,7 +19,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../context/AuthContext';
-import { esc } from '../utils/sanitize';
+// import { esc } from '../utils/sanitize';
 import dayjs from 'dayjs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -142,97 +142,97 @@ const SalesReportPage = () => {
   const [reprintLoading, setReprintLoading] = useState(false);
   const [reprintOpen, setReprintOpen] = useState(false);
 
-  const handlePrint = () => {
-    if (!reprintSale) return;
-    const net = reprintSale.net_amount;
-    const sub = reprintSale.total_amount;
-    const totalGst = Math.max(0, Number(net) - Number(sub));
-    const cgstAmt = totalGst / 2;
-    const sgstAmt = totalGst / 2;
-    const created = dayjs(reprintSale.created_at);
-    const snapDate = created.format('DD-MM-YYYY');
-    const snapTime = created.format('hh:mm:ss A');
-    const totalItems = reprintItems.length;
-    const totalQty = reprintItems.reduce((s, i) => s + i.quantity, 0);
-    const totalDiscount = reprintItems.reduce((s, i) => s + Number(i.discount || 0), 0);
-    const hr = '<hr style="border:none;border-top:1px dashed #000;margin:3px 0">';
-    const itemRows = reprintItems.map((item) => {
-      return '<tr>'
-        + '<td style="text-align:left;padding:2px 0;overflow:hidden;white-space:nowrap;max-width:100px">' + esc(item.product?.name ?? '') + '</td>'
-        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + esc(item.quantity) + '</td>'
-        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.mrp).toFixed(0) + '</td>'
-        + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.discount || 0).toFixed(0) + '</td>'
-        + '<td style="text-align:right;padding:2px 0;white-space:nowrap">' + Number(item.total).toFixed(2) + '</td>'
-        + '</tr>';
-    }).join('');
-    const styles = '* { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; font-weight: 700 !important; }'
-      + 'body { font-family: "Courier New", Courier, monospace; font-size: 12px; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; line-height: 1.8; }'
-      + '.receipt { max-width: 320px; margin: auto; padding: 16px 6px; color: #000; }'
-      + '.c { text-align: center; } .b { font-weight: 900 !important; }'
-      + 'table { width: 100%; border-collapse: collapse; }'
-      + 'td, th { padding: 4px 2px !important; }'
-      + '@page { margin: 0.5cm; size: 80mm auto; }';
-    const html = '<div class="receipt">'
-      + '<div class="c b" style="font-size:14px">CHELLAMAY HOUSE OF TOYS</div>'
-      + '<div class="c">27 AMMAN SANNATHI,</div>'
-      + '<div class="c">TENKASI - 627811</div>'
-      + '<div class="c">Ph: 8883509501 / 8680086899</div>'
-      + '<div class="c">GSTIN: 33BQNPP8756L1ZY</div>'
-      + hr
-      + '<div class="c b" style="font-size:13px;letter-spacing:2px">TaxInvoice</div>'
-      + hr
-      + '<div style="display:flex;justify-content:space-between"><span>BillNo: ' + esc(reprintSale.bill_number) + '</span><span>Time: ' + esc(snapTime) + '</span></div>'
-      + '<div>Date: ' + esc(snapDate) + '</div>'
-      + (reprintSale.customer_name ? '<div>Name: ' + esc(reprintSale.customer_name) + '</div>' : '<div>Name:</div>')
-      + (reprintSale.customer_phone ? '<div>Ph: ' + esc(reprintSale.customer_phone) + '</div>' : '')
-      + hr
-      + '<table style="table-layout:fixed;width:100%">'
-      + '<colgroup><col><col style="width:18px"><col style="width:48px"><col style="width:32px"><col style="width:58px"></colgroup>'
-      + '<thead><tr>'
-      + '<th style="text-align:left;border-bottom:1px dashed #000;padding:2px 0">Item</th>'
-      + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 2px">Q</th>'
-      + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 2px">MRP</th>'
-      + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 2px">Disc</th>'
-      + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 0">Amount</th>'
-      + '</tr></thead><tbody>' + itemRows + '</tbody></table>'
-      + hr
-      + '<div style="display:flex;justify-content:space-between">'
-      + '<span>Items :' + totalItems + '</span>'
-      + '<span>Qty :' + totalQty + '</span>'
-      + '<span>Amt :' + Number(sub).toFixed(2) + '</span></div>'
-      + hr
-      + '<table><thead><tr>'
-      + '<th style="text-align:center;border-bottom:1px dashed #000;padding:2px 0">TaxableAmt</th>'
-      + '<th style="text-align:center;border-bottom:1px dashed #000;padding:2px 0">CGST</th>'
-      + '<th style="text-align:center;border-bottom:1px dashed #000;padding:2px 0">SGST</th>'
-      + '</tr></thead><tbody><tr>'
-      + '<td style="text-align:center;padding:2px 0">' + Number(sub).toFixed(2) + '</td>'
-      + '<td style="text-align:center;padding:2px 0">' + cgstAmt.toFixed(2) + '</td>'
-      + '<td style="text-align:center;padding:2px 0">' + sgstAmt.toFixed(2) + '</td>'
-      + '</tr></tbody></table>'
-      + hr
-      + (totalDiscount > 0 ? '<div style="display:flex;justify-content:space-between"><span>Total Discount :</span><span>-₹' + totalDiscount.toFixed(2) + '</span></div>' + hr : '')
-      + (totalGst > 0 ? '<div style="display:flex;justify-content:space-between"><span>Total GST :</span><span>₹' + totalGst.toFixed(2) + '</span></div>' + hr : '')
-      + '<div class="c b" style="font-size:18px">Total :₹' + Number(net).toFixed(2) + '</div>'
-      + hr
-      + '<div class="c b">* No Warranty - No Exchange *</div>'
-      + '</div>';
+  // const handlePrint = () => {
+  //   if (!reprintSale) return;
+  //   const net = reprintSale.net_amount;
+  //   const sub = reprintSale.total_amount;
+  //   const totalGst = Math.max(0, Number(net) - Number(sub));
+  //   const cgstAmt = totalGst / 2;
+  //   const sgstAmt = totalGst / 2;
+  //   const created = dayjs(reprintSale.created_at);
+  //   const snapDate = created.format('DD-MM-YYYY');
+  //   const snapTime = created.format('hh:mm:ss A');
+  //   const totalItems = reprintItems.length;
+  //   const totalQty = reprintItems.reduce((s, i) => s + i.quantity, 0);
+  //   const totalDiscount = reprintItems.reduce((s, i) => s + Number(i.discount || 0), 0);
+  //   const hr = '<hr style="border:none;border-top:1px dashed #000;margin:3px 0">';
+  //   const itemRows = reprintItems.map((item) => {
+  //     return '<tr>'
+  //       + '<td style="text-align:left;padding:2px 0;overflow:hidden;white-space:nowrap;max-width:100px">' + esc(item.product?.name ?? '') + '</td>'
+  //       + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + esc(item.quantity) + '</td>'
+  //       + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.mrp).toFixed(0) + '</td>'
+  //       + '<td style="text-align:right;padding:2px 2px;white-space:nowrap">' + Number(item.discount || 0).toFixed(0) + '</td>'
+  //       + '<td style="text-align:right;padding:2px 0;white-space:nowrap">' + Number(item.total).toFixed(2) + '</td>'
+  //       + '</tr>';
+  //   }).join('');
+  //   const styles = '* { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; font-weight: 700 !important; }'
+  //     + 'body { font-family: "Courier New", Courier, monospace; font-size: 12px; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; line-height: 1.8; }'
+  //     + '.receipt { max-width: 320px; margin: auto; padding: 16px 6px; color: #000; }'
+  //     + '.c { text-align: center; } .b { font-weight: 900 !important; }'
+  //     + 'table { width: 100%; border-collapse: collapse; }'
+  //     + 'td, th { padding: 4px 2px !important; }'
+  //     + '@page { margin: 0.5cm; size: 80mm auto; }';
+  //   const html = '<div class="receipt">'
+  //     + '<div class="c b" style="font-size:14px">CHELLAMAY HOUSE OF TOYS</div>'
+  //     + '<div class="c">27 AMMAN SANNATHI,</div>'
+  //     + '<div class="c">TENKASI - 627811</div>'
+  //     + '<div class="c">Ph: 8883509501 / 8680086899</div>'
+  //     + '<div class="c">GSTIN: 33BQNPP8756L1ZY</div>'
+  //     + hr
+  //     + '<div class="c b" style="font-size:13px;letter-spacing:2px">TaxInvoice</div>'
+  //     + hr
+  //     + '<div style="display:flex;justify-content:space-between"><span>BillNo: ' + esc(reprintSale.bill_number) + '</span><span>Time: ' + esc(snapTime) + '</span></div>'
+  //     + '<div>Date: ' + esc(snapDate) + '</div>'
+  //     + (reprintSale.customer_name ? '<div>Name: ' + esc(reprintSale.customer_name) + '</div>' : '<div>Name:</div>')
+  //     + (reprintSale.customer_phone ? '<div>Ph: ' + esc(reprintSale.customer_phone) + '</div>' : '')
+  //     + hr
+  //     + '<table style="table-layout:fixed;width:100%">'
+  //     + '<colgroup><col><col style="width:18px"><col style="width:48px"><col style="width:32px"><col style="width:58px"></colgroup>'
+  //     + '<thead><tr>'
+  //     + '<th style="text-align:left;border-bottom:1px dashed #000;padding:2px 0">Item</th>'
+  //     + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 2px">Q</th>'
+  //     + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 2px">MRP</th>'
+  //     + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 2px">Disc</th>'
+  //     + '<th style="text-align:right;border-bottom:1px dashed #000;padding:2px 0">Amount</th>'
+  //     + '</tr></thead><tbody>' + itemRows + '</tbody></table>'
+  //     + hr
+  //     + '<div style="display:flex;justify-content:space-between">'
+  //     + '<span>Items :' + totalItems + '</span>'
+  //     + '<span>Qty :' + totalQty + '</span>'
+  //     + '<span>Amt :' + Number(sub).toFixed(2) + '</span></div>'
+  //     + hr
+  //     + '<table><thead><tr>'
+  //     + '<th style="text-align:center;border-bottom:1px dashed #000;padding:2px 0">TaxableAmt</th>'
+  //     + '<th style="text-align:center;border-bottom:1px dashed #000;padding:2px 0">CGST</th>'
+  //     + '<th style="text-align:center;border-bottom:1px dashed #000;padding:2px 0">SGST</th>'
+  //     + '</tr></thead><tbody><tr>'
+  //     + '<td style="text-align:center;padding:2px 0">' + Number(sub).toFixed(2) + '</td>'
+  //     + '<td style="text-align:center;padding:2px 0">' + cgstAmt.toFixed(2) + '</td>'
+  //     + '<td style="text-align:center;padding:2px 0">' + sgstAmt.toFixed(2) + '</td>'
+  //     + '</tr></tbody></table>'
+  //     + hr
+  //     + (totalDiscount > 0 ? '<div style="display:flex;justify-content:space-between"><span>Total Discount :</span><span>-₹' + totalDiscount.toFixed(2) + '</span></div>' + hr : '')
+  //     + (totalGst > 0 ? '<div style="display:flex;justify-content:space-between"><span>Total GST :</span><span>₹' + totalGst.toFixed(2) + '</span></div>' + hr : '')
+  //     + '<div class="c b" style="font-size:18px">Total :₹' + Number(net).toFixed(2) + '</div>'
+  //     + hr
+  //     + '<div class="c b">* No Warranty - No Exchange *</div>'
+  //     + '</div>';
 
-    // Use a hidden iframe so mobile browsers (Android/iOS) don't block it as a popup.
-    const frameId = '__thermal_print_frame__';
-    let iframe = document.getElementById(frameId);
-    if (iframe) iframe.remove();
-    iframe = document.createElement('iframe');
-    iframe.id = frameId;
-    iframe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none;visibility:hidden;';
-    document.body.appendChild(iframe);
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    doc.open();
-    doc.write('<!DOCTYPE html><html><head><title>' + esc(reprintSale.bill_number) + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
-    doc.close();
-    iframe.contentWindow.onafterprint = () => { iframe.remove(); };
-    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 600);
-  };
+  //   // Use a hidden iframe so mobile browsers (Android/iOS) don't block it as a popup.
+  //   const frameId = '__thermal_print_frame__';
+  //   let iframe = document.getElementById(frameId);
+  //   if (iframe) iframe.remove();
+  //   iframe = document.createElement('iframe');
+  //   iframe.id = frameId;
+  //   iframe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none;visibility:hidden;';
+  //   document.body.appendChild(iframe);
+  //   const doc = iframe.contentDocument || iframe.contentWindow.document;
+  //   doc.open();
+  //   doc.write('<!DOCTYPE html><html><head><title>' + esc(reprintSale.bill_number) + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>');
+  //   doc.close();
+  //   iframe.contentWindow.onafterprint = () => { iframe.remove(); };
+  //   setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 600);
+  // };
 
   /* ── Direct ESC/POS print via RawBT (Android Bluetooth) ── */
   const handlePrintRawBT = () => {
@@ -251,15 +251,17 @@ const SalesReportPage = () => {
     const cmd = (...v) => v.forEach(x => b.push(x));
     const txt = (s) => { for (let i = 0; i < s.length; i++) b.push(s.charCodeAt(i) & 0xFF); };
     const nl = () => b.push(LF);
-    const dash = () => { txt('----------------------------------------'); nl(); };
+    const dash = () => { txt('------------------------------------------'); nl(); };
     const center = () => cmd(ESC, 0x61, 1);
     const left = () => cmd(ESC, 0x61, 0);
     const bold = (on) => cmd(ESC, 0x45, on ? 1 : 0);
+    const fontB = (on) => cmd(ESC, 0x4D, on ? 0x01 : 0x00);
     const dblSize = (on) => cmd(ESC, 0x21, on ? 0x30 : 0x00);
     const cut = () => cmd(GS, 0x56, 0x42, 0x00);
     const col = (s, n, right = false) => { const t = String(s).substring(0, n); return right ? t.padStart(n) : t.padEnd(n); };
 
     cmd(ESC, 0x40); // init
+    fontB(true); // Font B – smaller chars for 3-inch paper
     center(); bold(true);
     txt('CHELLAMAY HOUSE OF TOYS'); nl();
     bold(false);
@@ -268,7 +270,7 @@ const SalesReportPage = () => {
     txt('Ph: 8883509501/8680086899'); nl();
     txt('GSTIN: 33BQNPP8756L1ZY'); nl();
     dash();
-    bold(true); txt('         TaxInvoice'); nl(); bold(false);
+    bold(true); txt('           TaxInvoice'); nl(); bold(false);
     dash();
     left();
     txt('BillNo: ' + reprintSale.bill_number); nl();
@@ -277,29 +279,29 @@ const SalesReportPage = () => {
     if (reprintSale.customer_phone) { txt('Ph    : ' + reprintSale.customer_phone); nl(); }
     dash();
     bold(true);
-    txt(col('Item', 18) + col('Q', 3, true) + col('MRP', 6, true) + col('Disc', 5, true) + col('Amt', 8, true)); nl();
+    txt(col('Item', 18) + col('Q', 3, true) + col('MRP', 7, true) + col('D', 5, true) + col('Amt', 9, true)); nl();
     bold(false);
     dash();
     reprintItems.forEach(item => {
       txt(
         col(item.product?.name ?? '', 18) +
         col(item.quantity, 3, true) +
-        col(Number(item.mrp).toFixed(0), 6, true) +
+        col(Number(item.mrp).toFixed(0), 7, true) +
         col(Number(item.discount || 0).toFixed(0), 5, true) +
-        col(Number(item.total).toFixed(2), 8, true)
+        col(Number(item.total).toFixed(2), 9, true)
       ); nl();
     });
     dash();
-    txt(col('Items:' + reprintItems.length + ' Qty:' + totalQty, 22) + col(sub.toFixed(2), 18, true)); nl();
+    txt(col('Items:' + reprintItems.length + ' Qty:' + totalQty, 24) + col(sub.toFixed(2), 18, true)); nl();
     dash();
-    txt(col('TaxableAmt', 14) + col('CGST', 13, true) + col('SGST', 13, true)); nl();
-    txt(col(sub.toFixed(2), 14) + col(cgst.toFixed(2), 13, true) + col(sgst.toFixed(2), 13, true)); nl();
+    txt(col('TaxableAmt', 14) + col('CGST', 14, true) + col('SGST', 14, true)); nl();
+    txt(col(sub.toFixed(2), 14) + col(cgst.toFixed(2), 14, true) + col(sgst.toFixed(2), 14, true)); nl();
     dash();
     if (totalDiscount > 0) { txt('Discount : -Rs.' + totalDiscount.toFixed(2)); nl(); }
     if (totalGst > 0) { txt('Total GST:  Rs.' + totalGst.toFixed(2)); nl(); dash(); }
-    bold(true); dblSize(true);
+    fontB(false); bold(true); dblSize(true);
     txt('Total:Rs.' + net.toFixed(2)); nl();
-    dblSize(false); bold(false);
+    dblSize(false); bold(false); fontB(true);
     dash();
     center(); txt('* No Warranty - No Exchange *'); nl();
     nl(); nl(); nl();
@@ -861,14 +863,14 @@ const SalesReportPage = () => {
             <Button
               variant="contained"
               startIcon={<PrintRoundedIcon />}
-              onClick={handlePrint}
+              onClick={handlePrintRawBT}
               disabled={reprintLoading}
               sx={{ flex: 1, borderRadius: 2.5, background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` } }}
             >
               Print
             </Button>
           </Box>
-          <Button
+          {/* <Button
             variant="outlined"
             fullWidth
             startIcon={<PrintRoundedIcon />}
@@ -877,7 +879,7 @@ const SalesReportPage = () => {
             sx={{ borderRadius: 2.5, borderColor: '#22C55E', color: '#16A34A', fontWeight: 700, '&:hover': { bgcolor: 'rgba(34,197,94,0.06)', borderColor: '#16A34A' } }}
           >
             Direct Print (RawBT – Bluetooth)
-          </Button>
+          </Button> */}
         </DialogActions>
       </Dialog>
 
