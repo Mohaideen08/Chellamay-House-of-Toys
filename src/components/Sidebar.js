@@ -17,6 +17,7 @@ import SystemUpdateAltRoundedIcon from '@mui/icons-material/SystemUpdateAltRound
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
+import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded';
 import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 
 export const DRAWER_WIDTH = 195;
@@ -35,6 +36,7 @@ const BRANCH_MENU = [
   { label: 'Return Report', path: '/return-report', icon: AssignmentReturnRoundedIcon },
   { label: 'Restock Report', path: '/restock-report', icon: SystemUpdateAltRoundedIcon },
   { label: 'Low Stock', path: '/low-stock', icon: WarningAmberRoundedIcon },
+  { label: 'Stock Transfer', path: '/stock-transfer', icon: SwapHorizRoundedIcon },
   { label: 'Stock Cost Report', path: '/stock-cost-report', icon: AccountBalanceWalletRoundedIcon, adminOnly: true },
 ];
 

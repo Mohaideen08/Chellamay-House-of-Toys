@@ -512,7 +512,7 @@ const BillingPage = () => {
     if (userBranchName) { txt('Branch: ' + userBranchName); nl(); }
     dash();
     center(); bold(true);
-    txt(col('Item', 20) + col('Q', 4, true) + col('MRP', 8, true) + col('Disc', 6, true) + col('Amt', 10, true)); nl();
+    txt(col('Item', 20) + col('Qty', 4, true) + col('MRP', 8, true) + col('Disc', 6, true) + col('Amt', 10, true)); nl();
     bold(false);
     dash();
     billItems.forEach(item => {
@@ -542,6 +542,64 @@ const BillingPage = () => {
 
     const uint8 = new Uint8Array(b);
     let bin = ''; uint8.forEach(x => bin += String.fromCharCode(x));
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      // iOS does not support RawBT – use browser print via hidden iframe
+      const e = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const snapDate = now.format('DD-MM-YYYY');
+      const snapTime = now.format('hh:mm:ss A');
+      const totalDiscount2 = billItems.reduce((s, i) => s + Number(i.discount || 0), 0);
+      const hr = '<hr style="border:none;border-top:1px dashed #000;margin:3px 0">';
+      const itemRows = billItems.map(item =>
+        '<tr>'
+        + '<td style="text-align:left;padding:2px 0;overflow:hidden;white-space:nowrap">' + e(item.product?.name ?? '') + '</td>'
+        + '<td style="text-align:right;padding:2px 2px">' + item.quantity + '</td>'
+        + '<td style="text-align:right;padding:2px 2px">' + Number(item.mrp).toFixed(0) + '</td>'
+        + '<td style="text-align:right;padding:2px 2px">' + Number(item.discount || 0).toFixed(0) + '</td>'
+        + '<td style="text-align:right;padding:2px 0">' + Number(item.total).toFixed(2) + '</td>'
+        + '</tr>'
+      ).join('');
+      const styles = '* { box-sizing:border-box; margin:0; padding:0; color:#000 !important; font-weight:700 !important; }'
+        + 'body { font-family:"Courier New",Courier,monospace; font-size:11px; background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; line-height:1.8; }'
+        + '.receipt { max-width:76mm; margin:auto; padding:4px; } .c { text-align:center; }'
+        + 'table { width:100%; border-collapse:collapse; } td,th { padding:2px 1px !important; }'
+        + '@page { margin:0; size:80mm auto; }';
+      const html = '<div class="receipt">'
+        + '<div class="c" style="font-size:13px">CHELLAMAY HOUSE OF TOYS</div>'
+        + '<div class="c">27 AMMAN SANNATHI,</div><div class="c">TENKASI-627811</div>'
+        + '<div class="c">Ph: 8883509501/8680086899</div><div class="c">GSTIN: 33BQNPP8756L1ZY</div>'
+        + hr + '<div class="c" style="font-size:12px">TaxInvoice</div>' + hr
+        + '<div class="c">BillNo: ' + e(billNumber) + '</div>'
+        + '<div class="c">Date: ' + e(snapDate) + '  ' + e(snapTime) + '</div>'
+        + (customerName ? '<div class="c">Name: ' + e(customerName) + '</div>' : '')
+        + (customerPhone ? '<div class="c">Ph: ' + e(customerPhone) + '</div>' : '')
+        + (userBranchName ? '<div class="c">Branch: ' + e(userBranchName) + '</div>' : '')
+        + hr
+        + '<table style="table-layout:fixed;width:100%"><colgroup><col><col style="width:18px"><col style="width:44px"><col style="width:30px"><col style="width:56px"></colgroup>'
+        + '<thead><tr><th style="text-align:left;border-bottom:1px dashed #000">Item</th><th style="text-align:right;border-bottom:1px dashed #000">Q</th><th style="text-align:right;border-bottom:1px dashed #000">MRP</th><th style="text-align:right;border-bottom:1px dashed #000">Disc</th><th style="text-align:right;border-bottom:1px dashed #000">Amt</th></tr></thead>'
+        + '<tbody>' + itemRows + '</tbody></table>'
+        + hr
+        + '<div style="display:flex;justify-content:space-between"><span>Items:' + totalItemsCount + ' Qty:' + totalQty + '</span><span>' + sub.toFixed(2) + '</span></div>'
+        + hr
+        + '<table><thead><tr><th style="text-align:center;border-bottom:1px dashed #000">TaxableAmt</th><th style="text-align:center;border-bottom:1px dashed #000">CGST</th><th style="text-align:center;border-bottom:1px dashed #000">SGST</th></tr></thead>'
+        + '<tbody><tr><td style="text-align:center">' + sub.toFixed(2) + '</td><td style="text-align:center">' + cgstAmt.toFixed(2) + '</td><td style="text-align:center">' + sgstAmt.toFixed(2) + '</td></tr></tbody></table>'
+        + hr
+        + (totalDiscount2 > 0 ? '<div style="display:flex;justify-content:space-between"><span>Discount:</span><span>-Rs.' + totalDiscount2.toFixed(2) + '</span></div>' + hr : '')
+        + (totalGst > 0 ? '<div style="display:flex;justify-content:space-between"><span>Total GST:</span><span>Rs.' + totalGst.toFixed(2) + '</span></div>' + hr : '')
+        + '<div class="c" style="font-size:16px">Total: Rs.' + net.toFixed(2) + '</div>'
+        + hr + '<div class="c">* No Warranty - No Exchange *</div></div>';
+      const fid = '__tp_frame__';
+      let fr = document.getElementById(fid); if (fr) fr.remove();
+      fr = document.createElement('iframe');
+      fr.id = fid; fr.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none;visibility:hidden;';
+      document.body.appendChild(fr);
+      const doc = fr.contentDocument || fr.contentWindow.document;
+      doc.open(); doc.write('<!DOCTYPE html><html><head><title>' + e(billNumber) + '</title><style>' + styles + '</style></head><body>' + html + '</body></html>'); doc.close();
+      fr.contentWindow.onafterprint = () => fr.remove();
+      setTimeout(() => { fr.contentWindow.focus(); fr.contentWindow.print(); }, 600);
+      return;
+    }
     window.location.href = 'rawbt:base64,' + btoa(bin);
   }, [billItems, billNumber, netAmount, subtotal, totalGst, cgstAmt, sgstAmt, customerName, customerPhone, userBranchName]);
 
