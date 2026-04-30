@@ -198,19 +198,19 @@ const QRStickerPage = () => {
       }),
     );
     const html = stickers.join("");
-    // 5-inch roll: 127mm wide, sticker 42.3mm × 25mm (3 per row, no gap)
+    // 5-inch roll: 135mm wide, sticker 42.3mm × 25mm (3 per row, 3mm gap)
     const rowCount = Math.ceil(stickers.length / 3);
     const pageHeightMm = rowCount * 25; // each row = 25mm, no row gap
     const styles = `
-      @page { size: 127mm ${pageHeightMm}mm; margin: 0; }
+      @page { size: 135mm ${pageHeightMm}mm; margin: 0; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { font-family: Arial, sans-serif; background: #fff; width: 127mm; overflow: visible; }
-      .grid { display: grid; grid-template-columns: repeat(3, 42.3mm); gap: 0; width: 126.9mm; }
+      html, body { font-family: Arial, sans-serif; background: #fff; width: 135mm; overflow: visible; }
+      .grid { display: grid; grid-template-columns: repeat(3, 42.3mm); gap: 3mm; width: 130.9mm; }
       .sticker { width: 42.3mm; height: 25mm; overflow: hidden; display: flex; flex-direction: column; padding: 0.8mm 1.2mm; background: #fff; page-break-inside: avoid; break-inside: avoid; }
       .body { display: flex; align-items: center; flex: 1; gap: 2pt; overflow: hidden; }
       .qr { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
       .shop { font-size: 6pt; font-weight: 700; color: #111; letter-spacing: 0.2px; margin-bottom: 0.8pt; text-align: center; }
-      .qr svg { width: 15mm; height: 15mm; display: block; }
+      .qr svg { width: 14mm; height: 14mm; display: block; }
       .info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.5pt; overflow: hidden; }
       .pname { font-size: 6.5pt; font-weight: 900; color: #111; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
       .price { font-size: 8pt; font-weight: 900; color: #000; white-space: nowrap; }
